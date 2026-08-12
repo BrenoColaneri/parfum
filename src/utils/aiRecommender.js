@@ -1,58 +1,91 @@
-export const getAIRecommendation = (occasion, weather, inventory) => {
-  // If inventory is empty, return null
+import { GoogleGenerativeAI } from '@google/generative-ai';
+
+// Initialize Gemini
+const genAI = import.meta.env.VITE_GEMINI_API_KEY 
+  ? new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY)
+  : null;
+
+export const simulateAIRecommendation = async (weather, occasion, inventory) => {
   if (!inventory || inventory.length === 0) return null;
 
-  // Simple mock AI logic based on rules
-  // Real AI would take context and generate this dynamically.
-  
-  const isCold = weather.temp < 20;
-  const isHot = weather.temp >= 25;
-  const isMild = weather.temp >= 20 && weather.temp < 25;
+  // Graceful fallback to Mock if no key
+  if (!genAI || !import.meta.env.VITE_GEMINI_API_KEY) {
+    return new Promise(resolve => {
+      setTimeout(() => {
+        const isWarm = weather.temp > 22;
+        let recommended = inventory[0]; 
 
-  let recommendedPerfume = null;
-  let rationale = "";
-  let recommendedNotes = [];
-  let avoidedNotes = [];
+        if (isWarm || occasion === 'Academia') {
+          recommended = inventory.find(p => p.type.toLowerCase().includes('fresco')) || inventory[0];
+        } else {
+          recommended = inventory.find(p => p.type.toLowerCase().includes('amadeirado') || p.type.toLowerCase().includes('especiado')) || inventory[0];
+        }
 
-  // Very rudimentary matching just for the mock
-  // We prefer 'Amadeirado' for cold/night, 'Fresco' for hot/day, etc.
-
-  if (occasion === 'Encontro' || occasion === 'Festa') {
-    if (isCold || isMild) {
-      recommendedPerfume = inventory.find(p => p.type.toLowerCase().includes('amadeirado')) || inventory[0];
-      rationale = `A temperatura amena/fria (${weather.temp}°C) combinada com a ocasião (${occasion}) pede uma fragrância mais densa e marcante. As notas amadeiradas de ${recommendedPerfume.name} vão projetar elegância sem sufocar, criando uma aura de mistério e sofisticação ideal para o ambiente.`;
-      recommendedNotes = ['Madeira', 'Âmbar', 'Especiarias'];
-      avoidedNotes = ['Cítrico', 'Aquático'];
-    } else {
-      recommendedPerfume = inventory.find(p => p.type.toLowerCase().includes('fresco')) || inventory[0];
-      rationale = `O clima quente (${weather.temp}°C) exige algo que não desande na pele durante a ${occasion}. A abertura fresca de ${recommendedPerfume.name} manterá você revigorado, enquanto o fundo garante a fixação necessária para a ocasião.`;
-      recommendedNotes = ['Cítrico', 'Floral', 'Almíscar'];
-      avoidedNotes = ['Couro', 'Tabaco'];
-    }
-  } else if (occasion === 'Trabalho') {
-    recommendedPerfume = inventory.find(p => p.type.toLowerCase().includes('fresco')) || inventory[0];
-    rationale = `Para o Trabalho em um dia de ${weather.temp}°C e ${weather.condition}, a discrição é fundamental. O perfil aromático/fresco de ${recommendedPerfume.name} transmite limpeza e profissionalismo, sem invadir o espaço alheio no escritório.`;
-    recommendedNotes = ['Lavanda', 'Vetiver', 'Cítrico'];
-    avoidedNotes = ['Baunilha Forte', 'Oud'];
-  } else if (occasion === 'Academia') {
-    recommendedPerfume = inventory.find(p => p.type.toLowerCase().includes('fresco')) || inventory[0];
-    rationale = `Alta transpiração e ambiente fechado pedem perfumes extremamente leves. A opção mais fresca do seu inventário (${recommendedPerfume.name}) vai prolongar a sensação de banho tomado sem sufocar quem está ao seu redor treinando.`;
-    recommendedNotes = ['Limão', 'Aquático', 'Hortelã'];
-    avoidedNotes = ['Qualquer nota doce ou densa'];
-  } else {
-    // Casual
-    recommendedPerfume = inventory[Math.floor(Math.random() * inventory.length)];
-    rationale = `Para uma ocasião Casual com ${weather.temp}°C e tempo ${weather.condition}, ${recommendedPerfume.name} é uma escolha versátil e confortável. Equilibra bem com o clima atual e não exige muita formalidade.`;
-    recommendedNotes = ['Frutado', 'Almíscar Branco', 'Madeira Leve'];
-    avoidedNotes = ['Notas muito animálicas'];
+        resolve({
+          perfume: recommended,
+          rationale: `Simulação: O clima está ${weather.temp}°C e você vai para um(a) ${occasion}. O ${recommended.name} é ideal pois sua característica ${recommended.type} funciona perfeitamente nesse cenário.`,
+          recommendedNotes: isWarm ? ['Cítricos', 'Aquáticos'] : ['Madeiras', 'Especiarias', 'Âmbar'],
+          avoidNotes: isWarm ? ['Couro', 'Baunilha Pesada'] : ['Notas extremamente oceânicas'],
+          vibe: isWarm ? 'Refrescante' : 'Aconchegante'
+        });
+      }, 1500);
+    });
   }
 
-  return {
-    perfume: recommendedPerfume,
-    rationale,
-    recommendedNotes,
-    avoidedNotes,
-    occasion,
-    weather
-  };
+  // Real LLM Logic with Gemini
+  try {
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+    const prompt = `
+Você é um especialista em perfumaria de luxo e consultor de imagem.
+O usuário quer saber qual perfume da sua coleção usar.
+
+Dados do Clima: ${weather.temp}°C, ${weather.condition}.
+Ocasião: ${occasion}.
+
+Inventário do usuário:
+${inventory.map(p => `- ${p.name} (Tipo: ${p.type})`).join('\n')}
+
+Por favor, escolha o melhor perfume do inventário acima e retorne EXATAMENTE um JSON válido com a seguinte estrutura e nada mais (sem markdown code blocks):
+{
+  "perfumeName": "Nome exato do perfume escolhido do inventário",
+  "rationale": "Sua explicação poética e especializada do porquê de 2 a 3 frases",
+  "recommendedNotes": ["Nota1", "Nota2", "Nota3"],
+  "avoidNotes": ["Nota1", "Nota2"],
+  "vibe": "Uma palavra definindo a vibe (ex: Sedutor, Refrescante)"
+}
+`;
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    let text = response.text().trim();
+    
+    // Remove potential markdown wrappers if the model includes them despite instructions
+    if(text.startsWith('\`\`\`json')) text = text.replace('\`\`\`json', '');
+    if(text.startsWith('\`\`\`')) text = text.replace('\`\`\`', '');
+    if(text.endsWith('\`\`\`')) text = text.replace(/\`\`\`$/, '');
+    
+    const parsedData = JSON.parse(text.trim());
+    
+    const selectedPerfume = inventory.find(p => p.name.toLowerCase() === parsedData.perfumeName.toLowerCase()) || inventory[0];
+
+    return {
+      perfume: selectedPerfume,
+      rationale: parsedData.rationale,
+      recommendedNotes: parsedData.recommendedNotes,
+      avoidNotes: parsedData.avoidNotes,
+      vibe: parsedData.vibe
+    };
+  } catch (error) {
+    console.error("Gemini AI Error:", error);
+    // Fallback to mock if API fails
+    const recommended = inventory[0];
+    return {
+      perfume: recommended,
+      rationale: `Tivemos um problema de conexão com o oráculo (IA). Sugiro o clássico ${recommended.name} para não errar hoje.`,
+      recommendedNotes: ['Seguro', 'Clássico'],
+      avoidNotes: [],
+      vibe: 'Garantido'
+    };
+  }
 };
