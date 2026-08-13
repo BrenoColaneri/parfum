@@ -91,7 +91,13 @@ export const AppProvider = ({ children }) => {
 
   const addPerfume = async (perfume) => {
     if (!user) return;
-    const newPerfume = { name: perfume.name, type: perfume.type, icon: perfume.icon, user_id: user.id };
+    const newPerfume = { 
+      name: perfume.name, 
+      type: perfume.type, 
+      icon: perfume.icon, 
+      notes: perfume.notes || '',
+      user_id: user.id 
+    };
     const { data, error } = await supabase.from('inventory').insert([newPerfume]).select();
     if (!error && data) {
       setInventory([...inventory, data[0]]);

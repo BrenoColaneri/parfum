@@ -89,3 +89,50 @@ Por favor, escolha o melhor perfume do inventário acima e retorne EXATAMENTE um
     };
   }
 };
+
+export const enrichPerfumeData = async (perfumeName) => {
+  if (!genAI || !import.meta.env.VITE_GEMINI_API_KEY) {
+    // Mock Se IA estiver desativada
+    return {
+      name: perfumeName,
+      type: "Desconhecido",
+      icon: "Wind",
+      notes: "Mistério"
+    };
+  }
+
+  try {
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+    const prompt = `
+Você é uma enciclopédia de perfumaria de luxo. 
+O usuário digitou o seguinte nome de perfume (pode conter erros de digitação): "${perfumeName}"
+
+Por favor, identifique qual é esse perfume e me retorne EXATAMENTE um JSON válido com a seguinte estrutura e nada mais:
+{
+  "name": "Nome correto e oficial do perfume",
+  "type": "A Família Olfativa oficial (Ex: Amadeirado Especiado, Cítrico Fresco)",
+  "notes": "Uma string curta com as 3 principais notas (ex: Bergamota, Pimenta, Cedro)",
+  "icon": "Apenas um destes valores exatos baseado no tipo: Wind (fresco), Trees (amadeirado), Flame (especiado/quente), Droplets (aquático), Leaf (herbal)"
+}
+`;
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    let text = response.text().trim();
+    
+    if(text.startsWith('\`\`\`json')) text = text.replace('\`\`\`json', '');
+    if(text.startsWith('\`\`\`')) text = text.replace('\`\`\`', '');
+    if(text.endsWith('\`\`\`')) text = text.replace(/\`\`\`$/, '');
+    
+    return JSON.parse(text.trim());
+  } catch (error) {
+    console.error("Gemini AI Enrichment Error:", error);
+    return {
+      name: perfumeName,
+      type: "Desconhecido",
+      icon: "Wind",
+      notes: "Erro ao buscar"
+    };
+  }
+};
