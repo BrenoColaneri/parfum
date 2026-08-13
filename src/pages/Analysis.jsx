@@ -11,7 +11,7 @@ const Analysis = () => {
     return <Navigate to="/" />;
   }
 
-  const { perfume, rationale, recommendedNotes, avoidedNotes, occasion, weather } = recommendation;
+  const { perfume, rationale, recommendedNotes = [], avoidNotes = [], occasion, weather } = recommendation;
 
   const renderIcon = (type) => {
     if (type.includes('Fresco')) return <Droplet size={80} color="#38bdf8" style={{ marginBottom: '1rem' }} />;
@@ -92,7 +92,7 @@ const Analysis = () => {
         <CloudOff size={32} color="#f87171" style={{ flexShrink: 0 }} />
         <div className="avoid-text">
           <h4>Evitar:</h4>
-          <p>{avoidedNotes.join(', ')}</p>
+          <p>{avoidNotes?.join(', ') || 'Nenhuma nota em específico'}</p>
         </div>
       </div>
       

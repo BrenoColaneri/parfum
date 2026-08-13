@@ -6,9 +6,12 @@ import { simulateAIRecommendation } from '../utils/aiRecommender';
 
 const Home = () => {
   const navigate = useNavigate();
-  const { weather, inventory } = useAppContext();
+  const { weather, inventory, user } = useAppContext();
   const [selectedOccasion, setSelectedOccasion] = useState(null);
   const [isThinking, setIsThinking] = useState(false);
+
+  const userName = user?.user_metadata?.name || user?.email?.split('@')[0] || 'Usuário';
+  const capitalizedUserName = userName.charAt(0).toUpperCase() + userName.slice(1);
 
   const occasions = [
     { id: 'Trabalho', icon: <Briefcase size={20} /> },
@@ -21,9 +24,16 @@ const Home = () => {
   const handleRecommend = async () => {
     if (selectedOccasion && inventory.length > 0) {
       setIsThinking(true);
-      const recommendation = await simulateAIRecommendation(weather, selectedOccasion, inventory);
+      const aiResult = await simulateAIRecommendation(weather, selectedOccasion, inventory);
       setIsThinking(false);
-      navigate('/analysis', { state: { recommendation } });
+      if (aiResult) {
+        const recommendation = {
+          ...aiResult,
+          weather,
+          occasion: selectedOccasion
+        };
+        navigate('/analysis', { state: { recommendation } });
+      }
     } else if (inventory.length === 0) {
       alert("Por favor, adicione perfumes na sua Biblioteria primeiro!");
       navigate('/inventory');
@@ -34,7 +44,7 @@ const Home = () => {
     <div className="page-wrapper">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
         <div>
-          <h2 className="page-title">Olá, Usuário 👋</h2>
+          <h2 className="page-title">Olá, {capitalizedUserName} 👋</h2>
           <p className="subtitle">Pronto para escolher a fragrância de hoje?</p>
         </div>
       </div>

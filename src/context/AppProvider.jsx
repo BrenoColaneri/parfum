@@ -31,6 +31,51 @@ export const AppProvider = ({ children }) => {
   });
 
   useEffect(() => {
+    // Weather and Location Fetch
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(async (position) => {
+        try {
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
+          
+          // Get city name using BigDataCloud
+          const geoRes = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=pt`);
+          const geoData = await geoRes.json();
+          const city = geoData.city || geoData.locality || 'Localização Desconhecida';
+
+          // Get weather using Open-Meteo
+          const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code&daily=temperature_2m_max,temperature_2m_min&timezone=auto`);
+          const weatherData = await weatherRes.json();
+
+          const temp = Math.round(weatherData.current.temperature_2m);
+          const humidity = Math.round(weatherData.current.relative_humidity_2m);
+          const maxTemp = Math.round(weatherData.daily.temperature_2m_max[0]);
+          const minTemp = Math.round(weatherData.daily.temperature_2m_min[0]);
+          const wmo = weatherData.current.weather_code;
+          
+          let condition = 'Limpo';
+          if (wmo >= 1 && wmo <= 3) condition = 'Nublado';
+          if (wmo >= 45 && wmo <= 48) condition = 'Neblina';
+          if (wmo >= 51 && wmo <= 67) condition = 'Chuvoso';
+          if (wmo >= 71 && wmo <= 77) condition = 'Neve';
+          if (wmo >= 80 && wmo <= 99) condition = 'Tempestade';
+
+          setWeather({
+            city,
+            temp,
+            condition,
+            humidity,
+            minTemp,
+            maxTemp
+          });
+        } catch(e) {
+          console.error("Erro ao buscar clima/localização:", e);
+        }
+      }, (error) => {
+        console.error("Erro de geolocalização:", error);
+      });
+    }
+
     // Auth Listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session) {
@@ -125,7 +170,10 @@ export const AppProvider = ({ children }) => {
         name: w.name, 
         targetPrice: parseFloat(w.target_price), 
         currentPrice: mockCurrent, 
-        isOnSale: mockCurrent <= parseFloat(w.target_price) 
+        isOnSale: mockCurrent <= parseFloat(w.target_price),
+        brand: item.brand,
+        type: item.type,
+        icon: item.icon
       }]);
     }
   };
@@ -138,7 +186,7 @@ export const AppProvider = ({ children }) => {
   };
 
   return (
-    <AppContext.Provider value={{ isAuthenticated, login, signup, inventory, addPerfume, removePerfume, wishlist, addToWishlist, removeFromWishlist, weather }}>
+    <AppContext.Provider value={{ isAuthenticated, user, login, signup, inventory, addPerfume, removePerfume, wishlist, addToWishlist, removeFromWishlist, weather }}>
       {children}
     </AppContext.Provider>
   );
