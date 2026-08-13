@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CloudRain, Thermometer, Droplets, Briefcase, Heart, Dumbbell, GlassWater, PartyPopper } from 'lucide-react';
+import { CloudRain, Thermometer, Droplets, Briefcase, Heart, Dumbbell, GlassWater, PartyPopper, Utensils, Coffee, Music, Sun, Moon } from 'lucide-react';
 import { useAppContext } from '../context/AppProvider';
 import { simulateAIRecommendation } from '../utils/aiRecommender';
 
@@ -23,7 +23,12 @@ const Home = () => {
     { id: 'Encontro', icon: <Heart size={20} /> },
     { id: 'Casual', icon: <GlassWater size={20} /> },
     { id: 'Academia', icon: <Dumbbell size={20} /> },
-    { id: 'Festa', icon: <PartyPopper size={20} /> }
+    { id: 'Festa', icon: <PartyPopper size={20} /> },
+    { id: 'Jantar', icon: <Utensils size={20} /> },
+    { id: 'Reunião', icon: <Coffee size={20} /> },
+    { id: 'Balada', icon: <Music size={20} /> },
+    { id: 'Parque', icon: <Sun size={20} /> },
+    { id: 'Dormir', icon: <Moon size={20} /> }
   ];
 
   const handleRecommend = async () => {
