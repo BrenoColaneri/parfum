@@ -15,7 +15,7 @@ const Home = () => {
     const prefix = user.email.split('@')[0];
     userName = prefix.replace(/[0-9.]/g, ' ').replace(/\s+/g, ' ').trim();
   }
-  userName = userName || 'Usuário';
+  userName = (userName || 'Usuário').split(' ')[0];
   const capitalizedUserName = userName.charAt(0).toUpperCase() + userName.slice(1);
 
   const occasions = [
