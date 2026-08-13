@@ -93,6 +93,8 @@ export const AppProvider = ({ children }) => {
     if (!user) return;
     const newPerfume = { 
       name: perfume.name, 
+      brand: perfume.brand || '',
+      concentration: perfume.concentration || '',
       type: perfume.type, 
       icon: perfume.icon, 
       notes: perfume.notes || '',

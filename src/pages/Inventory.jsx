@@ -17,6 +17,8 @@ const Inventory = () => {
         
         await addPerfume({
           name: enrichedData.name,
+          brand: enrichedData.brand,
+          concentration: enrichedData.concentration,
           type: enrichedData.type,
           icon: enrichedData.icon,
           notes: enrichedData.notes
@@ -93,8 +95,16 @@ const Inventory = () => {
                 {getIcon(perfume.icon)}
               </div>
               <div className="inventory-details" style={{ flex: 1, marginLeft: '1rem' }}>
-                <h4 style={{ margin: 0, fontSize: '1.1rem' }}>{perfume.name}</h4>
-                <span className="inventory-tags" style={{ display: 'inline-block', marginTop: '0.25rem', marginBottom: '0.5rem' }}>{perfume.type}</span>
+                {perfume.brand && <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--accent)', fontWeight: 'bold' }}>{perfume.brand}</span>}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: '0.25rem 0' }}>
+                  <h4 style={{ margin: 0, fontSize: '1.1rem' }}>{perfume.name}</h4>
+                  {perfume.concentration && (
+                    <span style={{ fontSize: '0.65rem', padding: '0.2rem 0.4rem', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', color: '#e2e8f0', fontWeight: 'bold' }}>
+                      {perfume.concentration}
+                    </span>
+                  )}
+                </div>
+                <span className="inventory-tags" style={{ display: 'inline-block', marginBottom: '0.5rem' }}>{perfume.type}</span>
                 {perfume.notes && (
                   <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: 0, fontStyle: 'italic' }}>
                     Notas: {perfume.notes}

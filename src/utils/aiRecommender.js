@@ -95,6 +95,8 @@ export const enrichPerfumeData = async (perfumeName) => {
     // Mock Se IA estiver desativada
     return {
       name: perfumeName,
+      brand: "Desconhecida",
+      concentration: "EDP",
       type: "Desconhecido",
       icon: "Wind",
       notes: "Mistério"
@@ -111,6 +113,8 @@ O usuário digitou o seguinte nome de perfume (pode conter erros de digitação)
 Por favor, identifique qual é esse perfume e me retorne EXATAMENTE um JSON válido com a seguinte estrutura e nada mais:
 {
   "name": "Nome correto e oficial do perfume",
+  "brand": "A marca de design ou perfumaria (Ex: Dior, Chanel, Tom Ford)",
+  "concentration": "A concentração (Ex: EDT, EDP, Parfum, Extrait)",
   "type": "A Família Olfativa oficial (Ex: Amadeirado Especiado, Cítrico Fresco)",
   "notes": "Uma string curta com as 3 principais notas (ex: Bergamota, Pimenta, Cedro)",
   "icon": "Apenas um destes valores exatos baseado no tipo: Wind (fresco), Trees (amadeirado), Flame (especiado/quente), Droplets (aquático), Leaf (herbal)"
@@ -132,6 +136,8 @@ Por favor, identifique qual é esse perfume e me retorne EXATAMENTE um JSON vál
     console.error("Gemini AI Enrichment Error:", error);
     return {
       name: perfumeName,
+      brand: "Desconhecida",
+      concentration: "EDP",
       type: "Erro na API",
       icon: "Wind",
       notes: `DEBUG: ${error.message}`
