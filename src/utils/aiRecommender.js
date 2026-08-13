@@ -90,11 +90,11 @@ Por favor, escolha o melhor perfume do inventário acima e retorne EXATAMENTE um
   }
 };
 
-export const enrichPerfumeData = async (perfumeName) => {
+export const enrichPerfumeData = async ({ perfumeName, imageBase64, imageMimeType }) => {
   if (!genAI || !import.meta.env.VITE_GEMINI_API_KEY) {
     // Mock Se IA estiver desativada
     return {
-      name: perfumeName,
+      name: perfumeName || "Perfume da Foto",
       brand: "Desconhecida",
       concentration: "EDP",
       type: "Desconhecido",
@@ -106,11 +106,12 @@ export const enrichPerfumeData = async (perfumeName) => {
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash-lite" });
 
-    const prompt = `
-Você é uma enciclopédia de perfumaria de luxo. 
-O usuário digitou o seguinte nome de perfume (pode conter erros de digitação): "${perfumeName}"
+    const promptText = `
+Você é uma enciclopédia de perfumaria de luxo e um especialista em visão computacional.
+${imageBase64 ? "Uma foto do frasco de perfume foi enviada." : ""}
+${perfumeName ? `O usuário também digitou o seguinte texto (pode conter erros): "${perfumeName}"` : ""}
 
-Por favor, identifique qual é esse perfume e me retorne EXATAMENTE um JSON válido com a seguinte estrutura e nada mais:
+Por favor, analise as informações (texto e/ou imagem do frasco), identifique com precisão qual é esse perfume e me retorne EXATAMENTE um JSON válido com a seguinte estrutura e nada mais:
 {
   "name": "Nome correto e oficial do perfume",
   "brand": "A marca de design ou perfumaria (Ex: Dior, Chanel, Tom Ford)",
@@ -121,7 +122,17 @@ Por favor, identifique qual é esse perfume e me retorne EXATAMENTE um JSON vál
 }
 `;
 
-    const result = await model.generateContent(prompt);
+    const payload = [promptText];
+    if (imageBase64 && imageMimeType) {
+      payload.push({
+        inlineData: {
+          data: imageBase64,
+          mimeType: imageMimeType
+        }
+      });
+    }
+
+    const result = await model.generateContent(payload);
     const response = await result.response;
     let text = response.text().trim();
     
@@ -135,7 +146,7 @@ Por favor, identifique qual é esse perfume e me retorne EXATAMENTE um JSON vál
   } catch (error) {
     console.error("Gemini AI Enrichment Error:", error);
     return {
-      name: perfumeName,
+      name: perfumeName || "Erro na Foto",
       brand: "Desconhecida",
       concentration: "EDP",
       type: "Erro na API",

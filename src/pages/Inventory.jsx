@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Search, Plus, Trash2, Droplets, Trees, Flame, Wind, Leaf, Sparkles } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { Search, Plus, Trash2, Droplets, Trees, Flame, Wind, Leaf, Sparkles, Camera, X } from 'lucide-react';
 import { useAppContext } from '../context/AppProvider';
 import { enrichPerfumeData } from '../utils/aiRecommender';
 
@@ -8,12 +8,40 @@ const Inventory = () => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [newPerfumeName, setNewPerfumeName] = useState('');
   const [isSearchingAI, setIsSearchingAI] = useState(false);
+  
+  // Multimodal state
+  const [imageBase64, setImageBase64] = useState(null);
+  const [imageMimeType, setImageMimeType] = useState(null);
+  const fileInputRef = useRef(null);
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result.split(',')[1];
+        setImageBase64(base64String);
+        setImageMimeType(file.type);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    setImageBase64(null);
+    setImageMimeType(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
 
   const handleAdd = async () => {
-    if (newPerfumeName) {
+    if (newPerfumeName || imageBase64) {
       setIsSearchingAI(true);
       try {
-        const enrichedData = await enrichPerfumeData(newPerfumeName);
+        const enrichedData = await enrichPerfumeData({ 
+          perfumeName: newPerfumeName, 
+          imageBase64, 
+          imageMimeType 
+        });
         
         await addPerfume({
           name: enrichedData.name,
@@ -26,6 +54,7 @@ const Inventory = () => {
         
         setShowAddForm(false);
         setNewPerfumeName('');
+        removeImage();
       } catch (error) {
         alert('Erro ao buscar perfume. Tente novamente.');
       } finally {
@@ -54,29 +83,61 @@ const Inventory = () => {
       {showAddForm && (
         <div className="glass-card" style={{ marginBottom: '1.5rem', border: '1px solid var(--accent)' }}>
           <h4 style={{ marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Sparkles size={18} color="var(--accent)" /> Busca Inteligente
+            <Sparkles size={18} color="var(--accent)" /> Busca Inteligente (Texto ou Foto)
           </h4>
           <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>
-            Digite o nome do perfume e nossa IA buscará a família olfativa e as notas principais automaticamente.
+            Digite o nome ou envie uma foto do frasco para a IA analisar.
           </p>
-          <input 
-            type="text" 
-            placeholder="Ex: Bleu de Chanel" 
-            value={newPerfumeName}
-            onChange={(e) => setNewPerfumeName(e.target.value)}
-            disabled={isSearchingAI}
-            style={{ width: '100%', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.2)', color: 'white', marginBottom: '1rem' }}
-          />
+          
+          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+            <input 
+              type="text" 
+              placeholder="Ex: Bleu de Chanel" 
+              value={newPerfumeName}
+              onChange={(e) => setNewPerfumeName(e.target.value)}
+              disabled={isSearchingAI}
+              style={{ flex: 1, padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.2)', color: 'white' }}
+            />
+            <button 
+              onClick={() => fileInputRef.current.click()}
+              disabled={isSearchingAI}
+              style={{ padding: '0 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.1)', color: 'white', border: '1px solid rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Camera size={24} />
+            </button>
+            <input 
+              type="file" 
+              accept="image/*" 
+              ref={fileInputRef}
+              onChange={handleImageChange}
+              style={{ display: 'none' }} 
+            />
+          </div>
+
+          {imageBase64 && (
+            <div style={{ position: 'relative', marginBottom: '1rem', display: 'inline-block' }}>
+              <img 
+                src={`data:${imageMimeType};base64,${imageBase64}`} 
+                alt="Preview" 
+                style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '8px', border: '2px solid var(--accent)' }} 
+              />
+              <button 
+                onClick={removeImage}
+                disabled={isSearchingAI}
+                style={{ position: 'absolute', top: '-8px', right: '-8px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                <X size={14} />
+              </button>
+            </div>
+          )}
           
           <div style={{ display: 'flex', gap: '0.5rem' }}>
             <button 
               onClick={handleAdd} 
-              disabled={isSearchingAI || !newPerfumeName}
+              disabled={isSearchingAI || (!newPerfumeName && !imageBase64)}
               style={{ flex: 1, padding: '0.75rem', borderRadius: '8px', background: 'var(--accent)', color: 'white', border: 'none', fontWeight: 'bold' }}>
-              {isSearchingAI ? 'Consultando IA...' : 'Adicionar ao Acervo'}
+              {isSearchingAI ? 'Analisando com IA...' : 'Adicionar ao Acervo'}
             </button>
             <button 
-              onClick={() => setShowAddForm(false)} 
+              onClick={() => { setShowAddForm(false); removeImage(); setNewPerfumeName(''); }} 
               disabled={isSearchingAI}
               style={{ padding: '0.75rem 1.5rem', borderRadius: '8px', background: '#334155', color: 'white', border: 'none' }}>
               Cancelar
