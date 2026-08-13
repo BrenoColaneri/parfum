@@ -132,9 +132,9 @@ Por favor, identifique qual é esse perfume e me retorne EXATAMENTE um JSON vál
     console.error("Gemini AI Enrichment Error:", error);
     return {
       name: perfumeName,
-      type: "Desconhecido",
+      type: "Erro na API",
       icon: "Wind",
-      notes: "Erro ao buscar"
+      notes: `DEBUG: ${error.message}`
     };
   }
 };
