@@ -75,12 +75,18 @@ export const AppProvider = ({ children }) => {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
       console.error('Login error:', error);
-      // Fallback for development if account doesn't exist - try to sign up
-      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({ email, password });
-      if(signUpError) {
-        console.error('Signup error:', signUpError);
-      }
+      throw error;
     }
+    return data;
+  };
+
+  const signup = async (email, password) => {
+    const { data, error } = await supabase.auth.signUp({ email, password });
+    if (error) {
+      console.error('Signup error:', error);
+      throw error;
+    }
+    return data;
   };
 
   const addPerfume = async (perfume) => {
@@ -124,7 +130,7 @@ export const AppProvider = ({ children }) => {
   };
 
   return (
-    <AppContext.Provider value={{ isAuthenticated, login, inventory, addPerfume, removePerfume, wishlist, addToWishlist, removeFromWishlist, weather }}>
+    <AppContext.Provider value={{ isAuthenticated, login, signup, inventory, addPerfume, removePerfume, wishlist, addToWishlist, removeFromWishlist, weather }}>
       {children}
     </AppContext.Provider>
   );
