@@ -34,7 +34,7 @@ export const simulateAIRecommendation = async (weather, occasion, inventory) => 
 
   // Real LLM Logic with Gemini
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash-lite" });
 
     const prompt = `
 Você é um especialista em perfumaria de luxo e consultor de imagem.
@@ -102,7 +102,7 @@ export const enrichPerfumeData = async (perfumeName) => {
   }
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash-lite" });
 
     const prompt = `
 Você é uma enciclopédia de perfumaria de luxo. 
