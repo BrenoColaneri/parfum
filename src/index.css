@@ -36,7 +36,8 @@ body {
 .app-container {
   width: 100vw;
   min-height: 100vh;
-  padding-bottom: calc(var(--nav-height) + 20px);
+  padding-top: max(env(safe-area-inset-top), 20px);
+  padding-bottom: calc(var(--nav-height) + 20px + env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
 }
