@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 const Login = () => {
   const { login, signup } = useAppContext();
   const navigate = useNavigate();
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
@@ -17,7 +18,7 @@ const Login = () => {
     if (email && password) {
       try {
         if (isSignUp) {
-          await signup(email, password);
+          await signup(email, password, name);
           alert('Conta criada com sucesso! Você já pode entrar.');
           setIsSignUp(false);
         } else {
@@ -90,6 +91,27 @@ const Login = () => {
         {errorMsg && <p style={{ color: '#ef4444', textAlign: 'center', marginBottom: '1rem', fontSize: '0.9rem' }}>{errorMsg}</p>}
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          {isSignUp && (
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>Nome</label>
+              <input 
+                type="text" 
+                required={isSignUp}
+                value={name}
+                onChange={e => setName(e.target.value)}
+                placeholder="Seu nome"
+                style={{
+                  width: '100%',
+                  padding: '1rem',
+                  borderRadius: '12px',
+                  border: '1px solid var(--glass-border)',
+                  background: 'rgba(0,0,0,0.2)',
+                  color: 'white',
+                  fontSize: '1rem'
+                }}
+              />
+            </div>
+          )}
           <div>
             <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>E-mail</label>
             <input 

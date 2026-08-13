@@ -10,7 +10,12 @@ const Home = () => {
   const [selectedOccasion, setSelectedOccasion] = useState(null);
   const [isThinking, setIsThinking] = useState(false);
 
-  const userName = user?.user_metadata?.name || user?.email?.split('@')[0] || 'Usuário';
+  let userName = user?.user_metadata?.name;
+  if (!userName && user?.email) {
+    const prefix = user.email.split('@')[0];
+    userName = prefix.replace(/[0-9.]/g, ' ').replace(/\s+/g, ' ').trim();
+  }
+  userName = userName || 'Usuário';
   const capitalizedUserName = userName.charAt(0).toUpperCase() + userName.slice(1);
 
   const occasions = [

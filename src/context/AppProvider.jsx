@@ -125,8 +125,16 @@ export const AppProvider = ({ children }) => {
     return data;
   };
 
-  const signup = async (email, password) => {
-    const { data, error } = await supabase.auth.signUp({ email, password });
+  const signup = async (email, password, name) => {
+    const { data, error } = await supabase.auth.signUp({ 
+      email, 
+      password,
+      options: {
+        data: {
+          name: name
+        }
+      }
+    });
     if (error) {
       console.error('Signup error:', error);
       throw error;
