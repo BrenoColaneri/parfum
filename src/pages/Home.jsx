@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CloudRain, Thermometer, Droplets, Briefcase, Heart, Dumbbell, GlassWater, PartyPopper } from 'lucide-react';
 import { useAppContext } from '../context/AppProvider';
-import { getAIRecommendation } from '../utils/aiRecommender';
+import { simulateAIRecommendation } from '../utils/aiRecommender';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -18,16 +18,12 @@ const Home = () => {
     { id: 'Festa', icon: <PartyPopper size={20} /> }
   ];
 
-  const handleRecommend = () => {
+  const handleRecommend = async () => {
     if (selectedOccasion && inventory.length > 0) {
       setIsThinking(true);
-      
-      // Simulate AI loading
-      setTimeout(() => {
-        const recommendation = getAIRecommendation(selectedOccasion, weather, inventory);
-        setIsThinking(false);
-        navigate('/analysis', { state: { recommendation } });
-      }, 1500);
+      const recommendation = await simulateAIRecommendation(weather, selectedOccasion, inventory);
+      setIsThinking(false);
+      navigate('/analysis', { state: { recommendation } });
     } else if (inventory.length === 0) {
       alert("Por favor, adicione perfumes na sua Biblioteria primeiro!");
       navigate('/inventory');
