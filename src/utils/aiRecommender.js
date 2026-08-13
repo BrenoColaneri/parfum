@@ -121,11 +121,13 @@ Por favor, identifique qual é esse perfume e me retorne EXATAMENTE um JSON vál
     const response = await result.response;
     let text = response.text().trim();
     
-    if(text.startsWith('\`\`\`json')) text = text.replace('\`\`\`json', '');
-    if(text.startsWith('\`\`\`')) text = text.replace('\`\`\`', '');
-    if(text.endsWith('\`\`\`')) text = text.replace(/\`\`\`$/, '');
+    // Safer JSON extraction in case there's text before/after
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      return JSON.parse(jsonMatch[0]);
+    }
     
-    return JSON.parse(text.trim());
+    return JSON.parse(text);
   } catch (error) {
     console.error("Gemini AI Enrichment Error:", error);
     return {
