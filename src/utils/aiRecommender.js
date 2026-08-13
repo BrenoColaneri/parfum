@@ -34,7 +34,6 @@ export const simulateAIRecommendation = async (weather, occasion, inventory) => 
 
   // Real LLM Logic with Gemini
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash-lite" });
 
     const prompt = `
 Você é um especialista em perfumaria de luxo e consultor de imagem.
@@ -56,7 +55,15 @@ Por favor, escolha o melhor perfume do inventário acima e retorne EXATAMENTE um
 }
 `;
 
-    const result = await model.generateContent(prompt);
+    let result;
+    try {
+      const modelLite = genAI.getGenerativeModel({ model: "gemini-3.5-flash-lite" });
+      result = await modelLite.generateContent(prompt);
+    } catch (e) {
+      console.log("Fallback to gemini-3.5-flash due to error:", e.message);
+      const modelPro = genAI.getGenerativeModel({ model: "gemini-3.5-flash" });
+      result = await modelPro.generateContent(prompt);
+    }
     const response = await result.response;
     let text = response.text().trim();
     
@@ -104,8 +111,6 @@ export const enrichPerfumeData = async ({ perfumeName, imageBase64, imageMimeTyp
   }
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash-lite" });
-
     const promptText = `
 Você é uma enciclopédia de perfumaria de luxo e um especialista em visão computacional.
 ${imageBase64 ? "Uma foto do frasco de perfume foi enviada." : ""}
@@ -132,7 +137,16 @@ Por favor, analise as informações (texto e/ou imagem do frasco), identifique c
       });
     }
 
-    const result = await model.generateContent(payload);
+    let result;
+    try {
+      const modelLite = genAI.getGenerativeModel({ model: "gemini-3.5-flash-lite" });
+      result = await modelLite.generateContent(payload);
+    } catch (e) {
+      console.log("Fallback to gemini-3.5-flash due to error:", e.message);
+      const modelPro = genAI.getGenerativeModel({ model: "gemini-3.5-flash" });
+      result = await modelPro.generateContent(payload);
+    }
+
     const response = await result.response;
     let text = response.text().trim();
     
