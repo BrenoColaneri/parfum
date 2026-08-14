@@ -229,9 +229,57 @@ Retorne EXATAMENTE um JSON válido com a seguinte estrutura e nada mais:
       return JSON.parse(jsonMatch[0]);
     }
     
-    return JSON.parse(text);
-  } catch (error) {
-    console.error("Gemini AI Fetch Details Error:", error);
     return null;
+  } catch (error) {
+    console.error("Gemini API Error (Details):", error);
+    return null;
+  }
+};
+
+export const recommendNewPerfumes = async (inventoryList) => {
+  if (!genAI || !import.meta.env.VITE_GEMINI_API_KEY || inventoryList.length === 0) {
+    return [
+      {
+        name: "Creed Aventus",
+        brand: "Creed",
+        notes: "Abacaxi, Bétula, Almíscar",
+        reason: "Um clássico de nicho que todo colecionador deve conhecer."
+      }
+    ];
+  }
+
+  try {
+    const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash-lite" });
+    const inventoryNames = inventoryList.map(p => `${p.name} (${p.brand})`).join(", ");
+
+    const promptText = `
+Você é um sommelier de perfumes de luxo. 
+O usuário possui a seguinte coleção de perfumes: ${inventoryNames}.
+
+Baseado no gosto olfativo demonstrado por essa coleção, recomende 3 perfumes de nicho ou designer de luxo que ele ainda NÃO possui, mas que provavelmente vai amar.
+
+Retorne EXATAMENTE um array JSON válido com esta estrutura e nada mais:
+[
+  {
+    "name": "Nome do Perfume",
+    "brand": "Marca",
+    "notes": "Principais notas (ex: Couro, Íris, Baunilha)",
+    "reason": "Explicação curta do porquê ele vai gostar baseado na coleção atual dele."
+  }
+]
+`;
+
+    const result = await model.generateContent(promptText);
+    const response = await result.response;
+    let text = response.text().trim();
+    
+    const jsonMatch = text.match(/\[[\s\S]*\]/);
+    if (jsonMatch) {
+      return JSON.parse(jsonMatch[0]);
+    }
+    return [];
+  } catch (error) {
+    console.error("Gemini API Error (Discovery):", error);
+    return [];
   }
 };

@@ -9,6 +9,9 @@ create table public.inventory (
   concentration text,
   notes text,
   full_details jsonb,
+  fill_level integer,
+  user_rating integer,
+  user_review text,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
@@ -23,17 +26,41 @@ create table public.wishlist (
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
+-- 3. Criação da tabela SOTD (Scent of the Day)
+create table public.sotd_history (
+  id uuid default gen_random_uuid() primary key,
+  user_id uuid references auth.users not null,
+  perfume_id uuid references public.inventory not null,
+  date date not null,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
 -- 3. Habilitando a segurança de nível de linha (RLS)
 alter table public.inventory enable row level security;
 alter table public.wishlist enable row level security;
+alter table public.sotd_history enable row level security;
 
--- 4. Políticas de segurança (usuários só acessam seus próprios dados)
-create policy "Users can view their own inventory" on public.inventory for select using (auth.uid() = user_id);
+-- 4. Criação das políticas de segurança (Apenas o dono pode ver/editar seus dados)
+
+-- Políticas para Inventory
+create policy "Usuários podem ver seu próprio inventário"
+on public.inventory for select using (auth.uid() = user_id);
 create policy "Users can insert their own inventory" on public.inventory for insert with check (auth.uid() = user_id);
 create policy "Users can delete their own inventory" on public.inventory for delete using (auth.uid() = user_id);
 create policy "Users can update their own inventory" on public.inventory for update using (auth.uid() = user_id);
 
 create policy "Users can view their own wishlist" on public.wishlist for select using (auth.uid() = user_id);
 create policy "Users can insert their own wishlist" on public.wishlist for insert with check (auth.uid() = user_id);
-create policy "Users can delete their own wishlist" on public.wishlist for delete using (auth.uid() = user_id);
+create policy "Usuários podem excluir seus próprios desejos"
+on public.wishlist for delete using (auth.uid() = user_id);
+
+-- Políticas para SOTD History
+create policy "Usuários podem ver seu próprio historico SOTD"
+on public.sotd_history for select using (auth.uid() = user_id);
+
+create policy "Usuários podem inserir seu próprio historico SOTD"
+on public.sotd_history for insert with check (auth.uid() = user_id);
+
+create policy "Usuários podem excluir seu próprio historico SOTD"
+on public.sotd_history for delete using (auth.uid() = user_id);
 create policy "Users can update their own wishlist" on public.wishlist for update using (auth.uid() = user_id);

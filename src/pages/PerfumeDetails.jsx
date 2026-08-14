@@ -1,17 +1,26 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Loader2, Info, Wind, Droplets, Trees, Flame, Sparkles, Sun, Moon, Calendar, User, CalendarDays } from 'lucide-react';
+import { ArrowLeft, Loader2, Info, Wind, Droplets, Trees, Flame, Sparkles, Sun, Moon, Calendar, User, CalendarDays, Star, CheckCircle, Droplet } from 'lucide-react';
 import { useAppContext } from '../context/AppProvider';
 import { fetchPerfumeDetails } from '../utils/aiRecommender';
 
 const PerfumeDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { inventory, updatePerfumeDetails } = useAppContext();
+  const { inventory, updatePerfumeDetails, updateFillLevel, updateUserReview, recordSotd, sotdHistory } = useAppContext();
   
   const [perfume, setPerfume] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const [localReview, setLocalReview] = useState('');
+  const [localRating, setLocalRating] = useState(0);
+  const [isSavingReview, setIsSavingReview] = useState(false);
+  const [justRecordedSotd, setJustRecordedSotd] = useState(false);
+
+  // Check if recorded today
+  const todayStr = new Date().toISOString().split('T')[0];
+  const isSotdToday = sotdHistory.some(s => s.perfume_id === id && s.date === todayStr) || justRecordedSotd;
 
   useEffect(() => {
     const foundPerfume = inventory.find(p => p.id === id);
@@ -22,6 +31,8 @@ const PerfumeDetails = () => {
     }
     
     setPerfume(foundPerfume);
+    setLocalReview(foundPerfume.user_review || '');
+    setLocalRating(foundPerfume.user_rating || 0);
 
     const getDetails = async () => {
       // If we already fetched it before, don't fetch again
@@ -43,6 +54,23 @@ const PerfumeDetails = () => {
 
     getDetails();
   }, [id, inventory, updatePerfumeDetails]);
+
+  const handleRecordSotd = async () => {
+    await recordSotd(perfume.id, todayStr);
+    setJustRecordedSotd(true);
+  };
+
+  const handleSaveReview = async () => {
+    setIsSavingReview(true);
+    await updateUserReview(perfume.id, localRating, localReview);
+    setIsSavingReview(false);
+  };
+
+  const handleFillLevelChange = async (e) => {
+    const val = parseInt(e.target.value);
+    setPerfume(prev => ({...prev, fill_level: val}));
+    await updateFillLevel(perfume.id, val);
+  };
 
   const renderIcon = (iconName) => {
     switch(iconName) {
@@ -84,6 +112,32 @@ const PerfumeDetails = () => {
         <div style={{ marginTop: '1rem', display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
           <span className="inventory-tags">{perfume.type}</span>
           {perfume.concentration && <span className="inventory-tags" style={{ background: 'rgba(255, 255, 255, 0.1)', color: 'white' }}>{perfume.concentration}</span>}
+        </div>
+
+        <div style={{ marginTop: '1.5rem' }}>
+          <button 
+            onClick={handleRecordSotd}
+            disabled={isSotdToday}
+            style={{ width: '100%', padding: '1rem', borderRadius: '12px', border: 'none', background: isSotdToday ? 'rgba(16, 185, 129, 0.2)' : 'linear-gradient(135deg, var(--accent), #d8b4fe)', color: isSotdToday ? '#10b981' : 'white', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', cursor: isSotdToday ? 'default' : 'pointer', transition: 'all 0.3s ease' }}
+          >
+            {isSotdToday ? <><CheckCircle size={20} /> Registrado Hoje</> : <><Sparkles size={20} /> Estou usando hoje</>}
+          </button>
+        </div>
+
+        <div style={{ marginTop: '1.5rem', background: 'rgba(255,255,255,0.05)', padding: '1rem', borderRadius: '12px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+            <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}><Droplet size={14} /> Volumetria Restante</span>
+            <span style={{ fontSize: '0.85rem', fontWeight: 'bold' }}>{perfume.fill_level ?? 100}%</span>
+          </div>
+          <input 
+            type="range" 
+            min="0" 
+            max="100" 
+            step="5"
+            value={perfume.fill_level ?? 100} 
+            onChange={handleFillLevelChange}
+            style={{ width: '100%', accentColor: 'var(--accent)' }}
+          />
         </div>
       </div>
 
@@ -184,6 +238,36 @@ const PerfumeDetails = () => {
               <p style={{ margin: 0, fontWeight: 'bold', fontSize: '0.9rem' }}>{perfume.full_details.bestSeasons?.join(', ') || 'Não especificado'}</p>
             </div>
           </div>
+
+          <h3 className="section-header" style={{ marginTop: '2rem' }}>Meu Diário Olfativo</h3>
+          <div className="glass-card">
+            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', justifyContent: 'center' }}>
+              {[1, 2, 3, 4, 5].map(star => (
+                <Star 
+                  key={star} 
+                  size={32} 
+                  onClick={() => setLocalRating(star)}
+                  fill={localRating >= star ? '#fcd34d' : 'transparent'}
+                  color={localRating >= star ? '#fcd34d' : 'rgba(255,255,255,0.2)'}
+                  style={{ cursor: 'pointer', transition: 'all 0.2s ease' }}
+                />
+              ))}
+            </div>
+            <textarea 
+              value={localReview}
+              onChange={(e) => setLocalReview(e.target.value)}
+              placeholder="Quais as suas memórias com esse perfume? O que você sente quando usa?"
+              style={{ width: '100%', height: '100px', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.2)', color: 'white', resize: 'vertical', marginBottom: '1rem' }}
+            ></textarea>
+            <button 
+              onClick={handleSaveReview}
+              disabled={isSavingReview}
+              style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', background: 'var(--accent)', color: 'white', border: 'none', fontWeight: 'bold' }}
+            >
+              {isSavingReview ? 'Salvando...' : 'Salvar Diário'}
+            </button>
+          </div>
+
         </div>
       ) : null}
     </div>

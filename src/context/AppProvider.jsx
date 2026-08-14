@@ -21,6 +21,7 @@ export const AppProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [inventory, setInventory] = useState(initialInventory);
   const [wishlist, setWishlist] = useState(initialWishlist);
+  const [sotdHistory, setSotdHistory] = useState([]);
   const [weather, setWeather] = useState({
     city: 'São Paulo',
     temp: 18,
@@ -87,6 +88,7 @@ export const AppProvider = ({ children }) => {
         setUser(null);
         setInventory([]);
         setWishlist([]);
+        setSotdHistory([]);
       }
     });
 
@@ -115,6 +117,12 @@ export const AppProvider = ({ children }) => {
         };
       });
       setWishlist(mappedWishlist);
+    }
+
+    // Fetch SOTD History
+    const { data: sotdData, error: sotdError } = await supabase.from('sotd_history').select('*').order('date', { ascending: false });
+    if (!sotdError && sotdData) {
+      setSotdHistory(sotdData);
     }
   };
 
@@ -212,8 +220,41 @@ export const AppProvider = ({ children }) => {
     }
   };
 
+  const recordSotd = async (perfumeId, dateStr) => {
+    if (!user) return;
+    const { data, error } = await supabase.from('sotd_history').insert([{
+      user_id: user.id,
+      perfume_id: perfumeId,
+      date: dateStr
+    }]).select();
+    
+    if (!error && data) {
+      setSotdHistory([data[0], ...sotdHistory].sort((a, b) => new Date(b.date) - new Date(a.date)));
+    }
+  };
+
+  const updateFillLevel = async (id, level) => {
+    const { data, error } = await supabase.from('inventory').update({ fill_level: level }).match({ id }).select();
+    if (!error && data) {
+      setInventory(inventory.map(p => p.id === id ? { ...p, fill_level: level } : p));
+    }
+  };
+
+  const updateUserReview = async (id, rating, review) => {
+    const { data, error } = await supabase.from('inventory').update({ user_rating: rating, user_review: review }).match({ id }).select();
+    if (!error && data) {
+      setInventory(inventory.map(p => p.id === id ? { ...p, user_rating: rating, user_review: review } : p));
+    }
+  };
+
   return (
-    <AppContext.Provider value={{ isAuthenticated, user, login, signup, inventory, addPerfume, removePerfume, updatePerfumeDetails, wishlist, addToWishlist, removeFromWishlist, weather }}>
+    <AppContext.Provider value={{ 
+      isAuthenticated, user, login, signup, 
+      inventory, addPerfume, removePerfume, updatePerfumeDetails, updateFillLevel, updateUserReview,
+      wishlist, addToWishlist, removeFromWishlist, 
+      sotdHistory, recordSotd,
+      weather 
+    }}>
       {children}
     </AppContext.Provider>
   );

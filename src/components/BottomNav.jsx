@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { Home, Search, Heart } from 'lucide-react';
+import { Home, Search, Heart, CalendarDays } from 'lucide-react';
 
 const BottomNav = () => {
   const location = useLocation();
@@ -35,6 +35,13 @@ const BottomNav = () => {
       >
         <Heart size={24} />
         <span>Desejos</span>
+      </NavLink>
+      <NavLink 
+        to="/history" 
+        className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+      >
+        <CalendarDays size={24} />
+        <span>Histórico</span>
       </NavLink>
     </nav>
   );

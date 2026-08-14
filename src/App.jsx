@@ -8,6 +8,7 @@ import Inventory from './pages/Inventory';
 import Wishlist from './pages/Wishlist';
 import Analysis from './pages/Analysis';
 import PerfumeDetails from './pages/PerfumeDetails';
+import History from './pages/History';
 import BottomNav from './components/BottomNav';
 
 const PrivateRoute = ({ children }) => {
@@ -25,6 +26,7 @@ function App() {
           <Route path="/inventory" element={<PrivateRoute><Inventory /></PrivateRoute>} />
           <Route path="/wishlist" element={<PrivateRoute><Wishlist /></PrivateRoute>} />
           <Route path="/analysis" element={<PrivateRoute><Analysis /></PrivateRoute>} />
+          <Route path="/history" element={<PrivateRoute><History /></PrivateRoute>} />
           <Route path="/perfume/:id" element={<PrivateRoute><PerfumeDetails /></PrivateRoute>} />
         </Routes>
         
