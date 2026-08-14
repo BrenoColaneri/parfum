@@ -7,6 +7,7 @@ import Home from './pages/Home';
 import Inventory from './pages/Inventory';
 import Wishlist from './pages/Wishlist';
 import Analysis from './pages/Analysis';
+import PerfumeDetails from './pages/PerfumeDetails';
 import BottomNav from './components/BottomNav';
 
 const PrivateRoute = ({ children }) => {
@@ -24,6 +25,7 @@ function App() {
           <Route path="/inventory" element={<PrivateRoute><Inventory /></PrivateRoute>} />
           <Route path="/wishlist" element={<PrivateRoute><Wishlist /></PrivateRoute>} />
           <Route path="/analysis" element={<PrivateRoute><Analysis /></PrivateRoute>} />
+          <Route path="/perfume/:id" element={<PrivateRoute><PerfumeDetails /></PrivateRoute>} />
         </Routes>
         
         {/* Render BottomNav only if authenticated (since it relies on context partially, and shouldn't be seen on login) */}

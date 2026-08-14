@@ -166,6 +166,15 @@ export const AppProvider = ({ children }) => {
     }
   };
 
+  const updatePerfumeDetails = async (id, details) => {
+    const { data, error } = await supabase.from('inventory').update({ full_details: details }).match({ id }).select();
+    if (!error && data) {
+      setInventory(inventory.map(p => p.id === id ? { ...p, full_details: details } : p));
+    } else if (error) {
+      console.error('Error updating details in Supabase:', error);
+    }
+  };
+
   const addToWishlist = async (item) => {
     if (!user) return;
     const newItem = { name: item.name, target_price: item.targetPrice, user_id: user.id };
@@ -194,7 +203,7 @@ export const AppProvider = ({ children }) => {
   };
 
   return (
-    <AppContext.Provider value={{ isAuthenticated, user, login, signup, inventory, addPerfume, removePerfume, wishlist, addToWishlist, removeFromWishlist, weather }}>
+    <AppContext.Provider value={{ isAuthenticated, user, login, signup, inventory, addPerfume, removePerfume, updatePerfumeDetails, wishlist, addToWishlist, removeFromWishlist, weather }}>
       {children}
     </AppContext.Provider>
   );

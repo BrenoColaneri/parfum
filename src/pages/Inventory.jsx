@@ -1,9 +1,11 @@
 import React, { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Search, Plus, Trash2, Droplets, Trees, Flame, Wind, Leaf, Sparkles, Camera, X } from 'lucide-react';
 import { useAppContext } from '../context/AppProvider';
 import { enrichPerfumeData } from '../utils/aiRecommender';
 
 const Inventory = () => {
+  const navigate = useNavigate();
   const { inventory, addPerfume, removePerfume } = useAppContext();
   const [showAddForm, setShowAddForm] = useState(false);
   const [newPerfumeName, setNewPerfumeName] = useState('');
@@ -151,7 +153,12 @@ const Inventory = () => {
           <p style={{ textAlign: 'center', color: 'var(--text-muted)', marginTop: '2rem' }}>Sua biblioteria está vazia.</p>
         ) : (
           inventory.map(perfume => (
-            <div className="inventory-card" key={perfume.id} style={{ display: 'flex', alignItems: 'flex-start', padding: '1rem' }}>
+            <div 
+              className="inventory-card" 
+              key={perfume.id} 
+              onClick={() => navigate(`/perfume/${perfume.id}`)}
+              style={{ display: 'flex', alignItems: 'flex-start', padding: '1rem', cursor: 'pointer' }}
+            >
               <div className="perfume-icon-wrapper" style={{ width: 48, height: 48, marginTop: '4px' }}>
                 {getIcon(perfume.icon)}
               </div>
@@ -172,7 +179,13 @@ const Inventory = () => {
                   </p>
                 )}
               </div>
-              <button onClick={() => removePerfume(perfume.id)} style={{ background: 'none', border: 'none', color: '#ef4444', padding: '0.5rem' }}>
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  removePerfume(perfume.id);
+                }} 
+                style={{ background: 'none', border: 'none', color: '#ef4444', padding: '0.5rem', cursor: 'pointer' }}
+              >
                 <Trash2 size={20} />
               </button>
             </div>

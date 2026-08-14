@@ -169,3 +169,57 @@ Por favor, analise as informações (texto e/ou imagem do frasco), identifique c
     };
   }
 };
+
+export const fetchPerfumeDetails = async (perfumeName) => {
+  if (!genAI || !import.meta.env.VITE_GEMINI_API_KEY) {
+    // Mock Se IA estiver desativada
+    return new Promise(resolve => {
+      setTimeout(() => {
+        resolve({
+          description: "Um perfume clássico e atemporal com notas marcantes que combinam perfeitamente para qualquer ocasião.",
+          topNotes: ["Limão Siciliano", "Bergamota", "Pimenta Rosa"],
+          heartNotes: ["Lavanda", "Gerânio", "Jasmim"],
+          baseNotes: ["Sândalo", "Cedro", "Fava Tonka"],
+          longevity: 80, // percentage 0-100
+          projection: 70, // percentage 0-100
+          vibe: "Elegante"
+        });
+      }, 1500);
+    });
+  }
+
+  try {
+    const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash-lite" });
+
+    const promptText = `
+Você é uma enciclopédia de perfumaria de luxo, agindo como o banco de dados do Fragrantica.
+Me dê todas as informações detalhadas sobre o perfume: "${perfumeName}".
+
+Retorne EXATAMENTE um JSON válido com a seguinte estrutura e nada mais:
+{
+  "description": "Uma descrição poética e detalhada sobre o perfume (2 a 3 parágrafos curtos).",
+  "topNotes": ["Nota 1", "Nota 2", "Nota 3"],
+  "heartNotes": ["Nota 1", "Nota 2", "Nota 3"],
+  "baseNotes": ["Nota 1", "Nota 2", "Nota 3"],
+  "longevity": 85,
+  "projection": 75,
+  "vibe": "Uma palavra ou frase curta que defina a essência (ex: Poderoso, Sedutor)"
+}
+`;
+
+    const result = await model.generateContent(promptText);
+    const response = await result.response;
+    let text = response.text().trim();
+    
+    // Safer JSON extraction
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      return JSON.parse(jsonMatch[0]);
+    }
+    
+    return JSON.parse(text);
+  } catch (error) {
+    console.error("Gemini AI Fetch Details Error:", error);
+    return null;
+  }
+};
