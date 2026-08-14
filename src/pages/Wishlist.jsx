@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { Heart, Plus, Trash2, Bell, TrendingDown, Tag, Sparkles, Droplets, Trees, Flame, Wind, Leaf } from 'lucide-react';
+import { Heart, Plus, Trash2, Bell, TrendingDown, Tag, Sparkles, Droplets, Trees, Flame, Wind, Leaf, ShoppingCart } from 'lucide-react';
 import { useAppContext } from '../context/AppProvider';
 import { enrichPerfumeData } from '../utils/aiRecommender';
 
 const Wishlist = () => {
   const { wishlist, addToWishlist, removeFromWishlist } = useAppContext();
   const [showAddForm, setShowAddForm] = useState(false);
-  const [newItem, setNewItem] = useState({ name: '', targetPrice: '' });
+  const [newItem, setNewItem] = useState({ name: '', targetPrice: '', volume: '100ml' });
 
   const [isSearchingAI, setIsSearchingAI] = useState(false);
 
@@ -21,11 +21,13 @@ const Wishlist = () => {
           targetPrice: parseFloat(newItem.targetPrice),
           brand: enrichedData.brand,
           type: enrichedData.type,
-          icon: enrichedData.icon
+          icon: enrichedData.icon,
+          volume: newItem.volume,
+          link: enrichedData.shoppingLink
         });
         
         setShowAddForm(false);
-        setNewItem({ name: '', targetPrice: '' });
+        setNewItem({ name: '', targetPrice: '', volume: '100ml' });
       } catch (error) {
         alert('Erro ao buscar perfume. Tente novamente.');
       } finally {
@@ -78,6 +80,18 @@ const Wishlist = () => {
             disabled={isSearchingAI}
             style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.2)', color: 'white', marginBottom: '1rem' }}
           />
+          <select
+            value={newItem.volume}
+            onChange={(e) => setNewItem({...newItem, volume: e.target.value})}
+            disabled={isSearchingAI}
+            style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.2)', color: 'white', marginBottom: '1rem', appearance: 'none' }}
+          >
+            <option value="30ml">30ml</option>
+            <option value="50ml">50ml</option>
+            <option value="100ml">100ml</option>
+            <option value="150ml">150ml</option>
+            <option value="200ml">200ml</option>
+          </select>
           <div style={{ display: 'flex', gap: '0.5rem' }}>
             <button onClick={handleAdd} disabled={isSearchingAI} style={{ flex: 1, padding: '0.75rem', borderRadius: '8px', background: 'var(--accent)', color: 'white', border: 'none', fontWeight: 'bold' }}>
               {isSearchingAI ? 'Analisando com IA...' : 'Monitorar'}
@@ -105,7 +119,9 @@ const Wishlist = () => {
                 )}
                 <div style={{ flex: 1 }}>
                   {item.brand && <span style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--accent)', fontWeight: 'bold' }}>{item.brand}</span>}
-                  <h4 style={{ fontSize: '1.1rem', marginBottom: '0.25rem', marginTop: item.brand ? '0.1rem' : '0' }}>{item.name}</h4>
+                  <h4 style={{ fontSize: '1.1rem', marginBottom: '0.25rem', marginTop: item.brand ? '0.1rem' : '0' }}>
+                    {item.name} {item.volume && <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>({item.volume})</span>}
+                  </h4>
                   {item.type && <span style={{ fontSize: '0.7rem', display: 'inline-block', marginBottom: '0.5rem', opacity: 0.8 }}>{item.type}</span>}
                   
                   {item.isOnSale ? (
@@ -132,6 +148,12 @@ const Wishlist = () => {
                       </div>
                     </div>
                   </div>
+
+                  {item.isOnSale && item.link && (
+                    <a href={item.link} target="_blank" rel="noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', background: '#10b981', color: 'white', textDecoration: 'none', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 'bold', marginTop: '1rem' }}>
+                      <ShoppingCart size={16} /> Comprar Agora
+                    </a>
+                  )}
                 </div>
                 
                 <button onClick={() => removeFromWishlist(item.id)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', padding: '0.5rem' }}>

@@ -18,6 +18,8 @@ create table public.wishlist (
   user_id uuid references auth.users not null,
   name text not null,
   target_price numeric not null,
+  volume text,
+  link text,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 

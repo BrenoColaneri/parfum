@@ -109,7 +109,9 @@ export const AppProvider = ({ children }) => {
           name: w.name,
           targetPrice: parseFloat(w.target_price),
           currentPrice: mockCurrent,
-          isOnSale: mockCurrent <= parseFloat(w.target_price)
+          isOnSale: mockCurrent <= parseFloat(w.target_price),
+          volume: w.volume,
+          link: w.link
         };
       });
       setWishlist(mappedWishlist);
@@ -177,7 +179,13 @@ export const AppProvider = ({ children }) => {
 
   const addToWishlist = async (item) => {
     if (!user) return;
-    const newItem = { name: item.name, target_price: item.targetPrice, user_id: user.id };
+    const newItem = { 
+      name: item.name, 
+      target_price: item.targetPrice, 
+      volume: item.volume,
+      link: item.link,
+      user_id: user.id 
+    };
     const { data, error } = await supabase.from('wishlist').insert([newItem]).select();
     if (!error && data) {
       const w = data[0];
@@ -190,7 +198,9 @@ export const AppProvider = ({ children }) => {
         isOnSale: mockCurrent <= parseFloat(w.target_price),
         brand: item.brand,
         type: item.type,
-        icon: item.icon
+        icon: item.icon,
+        volume: w.volume,
+        link: w.link
       }]);
     }
   };

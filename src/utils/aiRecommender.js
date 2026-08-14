@@ -106,7 +106,8 @@ export const enrichPerfumeData = async ({ perfumeName, imageBase64, imageMimeTyp
       concentration: "EDP",
       type: "Desconhecido",
       icon: "Wind",
-      notes: "Mistério"
+      notes: "Mistério",
+      shoppingLink: "https://www.google.com/search?tbm=shop&q=perfume"
     };
   }
 
@@ -120,10 +121,11 @@ Por favor, analise as informações (texto e/ou imagem do frasco), identifique c
 {
   "name": "Nome correto e oficial do perfume",
   "brand": "A marca de design ou perfumaria (Ex: Dior, Chanel, Tom Ford)",
-  "concentration": "A concentração (Ex: EDT, EDP, Parfum, Extrait)",
+  "concentration": "A concentração PADRONIZADA usando SOMENTE uma das seguintes opções: EDC, EDT, EDP, Parfum, Extrait",
   "type": "A Família Olfativa oficial (Ex: Amadeirado Especiado, Cítrico Fresco)",
   "notes": "Uma string curta com as 3 principais notas (ex: Bergamota, Pimenta, Cedro)",
-  "icon": "Apenas um destes valores exatos baseado no tipo: Wind (fresco), Trees (amadeirado), Flame (especiado/quente), Droplets (aquático), Leaf (herbal)"
+  "icon": "Apenas um destes valores exatos baseado no tipo: Wind (fresco), Trees (amadeirado), Flame (especiado/quente), Droplets (aquático), Leaf (herbal)",
+  "shoppingLink": "Gere a URL exata do Google Shopping (ex: https://www.google.com/search?tbm=shop&q=Nome+do+Perfume+Marca)"
 }
 `;
 
