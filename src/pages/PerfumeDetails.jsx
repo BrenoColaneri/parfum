@@ -137,7 +137,7 @@ const PerfumeDetails = () => {
                 <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>{perfume.full_details.longevity}%</span>
               </div>
               <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', overflow: 'hidden' }}>
-                <div style={{ width: \`\${perfume.full_details.longevity}%\`, height: '100%', background: 'linear-gradient(90deg, var(--accent) 0%, #d8b4fe 100%)', borderRadius: '4px' }}></div>
+                <div style={{ width: `${perfume.full_details.longevity}%`, height: '100%', background: 'linear-gradient(90deg, var(--accent) 0%, #d8b4fe 100%)', borderRadius: '4px' }}></div>
               </div>
             </div>
             
@@ -147,7 +147,7 @@ const PerfumeDetails = () => {
                 <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>{perfume.full_details.projection}%</span>
               </div>
               <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', overflow: 'hidden' }}>
-                <div style={{ width: \`\${perfume.full_details.projection}%\`, height: '100%', background: 'linear-gradient(90deg, #38bdf8 0%, #bae6fd 100%)', borderRadius: '4px' }}></div>
+                <div style={{ width: `${perfume.full_details.projection}%`, height: '100%', background: 'linear-gradient(90deg, #38bdf8 0%, #bae6fd 100%)', borderRadius: '4px' }}></div>
               </div>
             </div>
           </div>
