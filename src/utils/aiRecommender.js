@@ -182,7 +182,12 @@ export const fetchPerfumeDetails = async (perfumeName) => {
           baseNotes: ["Sândalo", "Cedro", "Fava Tonka"],
           longevity: 80, // percentage 0-100
           projection: 70, // percentage 0-100
-          vibe: "Elegante"
+          vibe: "Elegante",
+          perfumer: "Jacques Polge",
+          releaseYear: "2010",
+          mainAccords: ["Cítrico", "Aromático", "Amadeirado"],
+          timeOfDay: "Dia",
+          bestSeasons: ["Primavera", "Verão"]
         });
       }, 1500);
     });
@@ -203,7 +208,12 @@ Retorne EXATAMENTE um JSON válido com a seguinte estrutura e nada mais:
   "baseNotes": ["Nota 1", "Nota 2", "Nota 3"],
   "longevity": 85,
   "projection": 75,
-  "vibe": "Uma palavra ou frase curta que defina a essência (ex: Poderoso, Sedutor)"
+  "vibe": "Uma palavra ou frase curta (ex: Poderoso, Sedutor)",
+  "perfumer": "Nome do Perfumista",
+  "releaseYear": "Ano de lançamento (ex: 2010)",
+  "mainAccords": ["Acorde 1", "Acorde 2", "Acorde 3", "Acorde 4"],
+  "timeOfDay": "Dia, Noite, ou Dia e Noite",
+  "bestSeasons": ["Primavera", "Verão", "Outono", "Inverno"]
 }
 `;
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Loader2, Info, Wind, Droplets, Trees, Flame, Sparkles } from 'lucide-react';
+import { ArrowLeft, Loader2, Info, Wind, Droplets, Trees, Flame, Sparkles, Sun, Moon, Calendar, User, CalendarDays } from 'lucide-react';
 import { useAppContext } from '../context/AppProvider';
 import { fetchPerfumeDetails } from '../utils/aiRecommender';
 
@@ -107,7 +107,26 @@ const PerfumeDetails = () => {
                 Vibe: {perfume.full_details.vibe}
               </div>
             )}
+            {perfume.full_details.perfumer && (
+              <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.1)', display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}><User size={14} /> {perfume.full_details.perfumer}</span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}><CalendarDays size={14} /> {perfume.full_details.releaseYear || 'N/A'}</span>
+              </div>
+            )}
           </div>
+
+          {perfume.full_details.mainAccords && perfume.full_details.mainAccords.length > 0 && (
+            <div style={{ marginBottom: '2rem' }}>
+              <h4 style={{ fontSize: '0.85rem', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Principais Acordes</h4>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                {perfume.full_details.mainAccords.map((accord, idx) => (
+                  <span key={idx} style={{ padding: '0.3rem 0.6rem', background: 'rgba(255,255,255,0.1)', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 'bold', color: 'white' }}>
+                    {accord}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
 
           <h3 className="section-header" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <Sparkles size={20} color="var(--accent)" /> Pirâmide Olfativa
@@ -130,7 +149,7 @@ const PerfumeDetails = () => {
           </div>
 
           <h3 className="section-header">Performance Estimada</h3>
-          <div className="glass-card">
+          <div className="glass-card" style={{ marginBottom: '2rem' }}>
             <div style={{ marginBottom: '1.5rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                 <span style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>Longevidade (Fixação)</span>
@@ -149,6 +168,20 @@ const PerfumeDetails = () => {
               <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', overflow: 'hidden' }}>
                 <div style={{ width: `${perfume.full_details.projection}%`, height: '100%', background: 'linear-gradient(90deg, #38bdf8 0%, #bae6fd 100%)', borderRadius: '4px' }}></div>
               </div>
+            </div>
+          </div>
+
+          <h3 className="section-header">Clima e Ocasião Ideal</h3>
+          <div style={{ display: 'flex', gap: '1rem' }}>
+            <div className="glass-card" style={{ flex: 1, padding: '1rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <Sun size={24} color="#fcd34d" style={{ marginBottom: '0.5rem' }} />
+              <h4 style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.2rem' }}>Uso Ideal</h4>
+              <p style={{ margin: 0, fontWeight: 'bold', fontSize: '0.9rem' }}>{perfume.full_details.timeOfDay || 'Não especificado'}</p>
+            </div>
+            <div className="glass-card" style={{ flex: 1, padding: '1rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <Calendar size={24} color="#6ee7b7" style={{ marginBottom: '0.5rem' }} />
+              <h4 style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.2rem' }}>Estações</h4>
+              <p style={{ margin: 0, fontWeight: 'bold', fontSize: '0.9rem' }}>{perfume.full_details.bestSeasons?.join(', ') || 'Não especificado'}</p>
             </div>
           </div>
         </div>
