@@ -228,7 +228,10 @@ export const AppProvider = ({ children }) => {
       date: dateStr
     }]).select();
     
-    if (!error && data) {
+    if (error) {
+      console.error('Error recording SOTD:', error);
+      alert('Erro ao registrar histórico: ' + error.message);
+    } else if (data) {
       setSotdHistory([data[0], ...sotdHistory].sort((a, b) => new Date(b.date) - new Date(a.date)));
     }
   };
