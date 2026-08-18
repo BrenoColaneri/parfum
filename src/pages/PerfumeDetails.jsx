@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Loader2, Info, Wind, Droplets, Trees, Flame, Sparkles, Sun, Moon, Calendar, User, CalendarDays, Star, CheckCircle, Droplet } from 'lucide-react';
+import { ArrowLeft, Loader2, Info, User, CalendarDays, Star, Layers, Activity, Users, DollarSign, Plus } from 'lucide-react';
 import { useAppContext } from '../context/AppProvider';
 import { fetchPerfumeDetails } from '../utils/aiRecommender';
 
@@ -35,12 +35,13 @@ const PerfumeDetails = () => {
     setLocalRating(foundPerfume.user_rating || 0);
 
     const getDetails = async () => {
-      // If we already fetched it before, don't fetch again
-      if (foundPerfume.full_details) {
+      // If we already fetched it before and it's the NEW schema (has accords)
+      if (foundPerfume.full_details && foundPerfume.full_details.accords) {
         setIsLoading(false);
         return;
       }
 
+      // If it doesn't exist or is legacy, fetch new
       setIsLoading(true);
       const details = await fetchPerfumeDetails(foundPerfume.name);
       if (details) {
@@ -72,15 +73,6 @@ const PerfumeDetails = () => {
     await updateFillLevel(perfume.id, val);
   };
 
-  const renderIcon = (iconName) => {
-    switch(iconName) {
-      case 'Trees': return <Trees size={40} color="var(--accent)" />;
-      case 'Flame': return <Flame size={40} color="#f97316" />;
-      case 'Wind': return <Wind size={40} color="#cbd5e1" />;
-      case 'Droplets': default: return <Droplets size={40} color="#38bdf8" />;
-    }
-  };
-
   if (error) {
     return (
       <div className="page-wrapper" style={{ paddingBottom: '3rem', textAlign: 'center' }}>
@@ -94,73 +86,95 @@ const PerfumeDetails = () => {
 
   if (!perfume) return null;
 
+  const renderBar = (label, value, color) => (
+    <div style={{ marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+      <div style={{ width: '80px', fontSize: '0.75rem', textAlign: 'right', color: 'var(--text-muted)' }}>{label}</div>
+      <div style={{ flex: 1, background: 'rgba(255,255,255,0.05)', height: '10px', borderRadius: '5px', overflow: 'hidden' }}>
+        <div style={{ width: `${value}%`, height: '100%', background: color, borderRadius: '5px' }}></div>
+      </div>
+    </div>
+  );
+
   return (
-    <div className="page-wrapper" style={{ paddingBottom: '3rem' }}>
+    <div className="page-wrapper" style={{ paddingBottom: '5rem' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
         <button onClick={() => navigate('/inventory')} style={{ background: 'none', border: 'none', color: 'var(--text-main)', padding: '0.5rem', cursor: 'pointer' }}>
           <ArrowLeft size={24} />
         </button>
-        <h2 className="page-title" style={{ margin: 0 }}>Dossiê Olfativo</h2>
       </div>
 
-      <div className="featured-bottle" style={{ marginBottom: '2rem' }}>
-        <div className="bottle-glow" style={{ background: 'radial-gradient(circle, rgba(167,139,250,0.3) 0%, rgba(0,0,0,0) 70%)' }}></div>
-        {renderIcon(perfume.icon)}
-        <h2 style={{ fontSize: '1.75rem', marginBottom: '0.25rem', marginTop: '1rem' }}>{perfume.name}</h2>
-        {perfume.brand && <span style={{ fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--accent)', fontWeight: 'bold' }}>{perfume.brand}</span>}
-        
-        <div style={{ marginTop: '1rem', display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
-          <span className="inventory-tags">{perfume.type}</span>
-          {perfume.concentration && <span className="inventory-tags" style={{ background: 'rgba(255, 255, 255, 0.1)', color: 'white' }}>{perfume.concentration}</span>}
+      <div className="perfume-details-header">
+        <div className="perfume-bottle" style={{ fontSize: '4rem', marginBottom: '1rem', display: 'flex', justifyContent: 'center' }}>
+          {perfume.image ? (
+            <img src={perfume.image} alt={perfume.name} style={{ width: '120px', height: '120px', objectFit: 'cover', borderRadius: '12px', border: '2px solid rgba(255,255,255,0.1)' }} />
+          ) : (
+            "✨"
+          )}
         </div>
+        <h2 style={{ fontSize: '1.8rem', margin: '0 0 0.5rem 0', textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>{perfume.name}</h2>
+        <p style={{ fontSize: '1.2rem', color: 'var(--accent)', margin: 0, fontWeight: 'bold', letterSpacing: '1px' }}>{perfume.brand}</p>
+      </div>
 
-        <div style={{ marginTop: '1.5rem' }}>
-          <button 
-            onClick={handleRecordSotd}
-            disabled={isSotdToday}
-            style={{ width: '100%', padding: '1rem', borderRadius: '12px', border: 'none', background: isSotdToday ? 'rgba(16, 185, 129, 0.2)' : 'linear-gradient(135deg, var(--accent), #d8b4fe)', color: isSotdToday ? '#10b981' : 'white', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', cursor: isSotdToday ? 'default' : 'pointer', transition: 'all 0.3s ease' }}
-          >
-            {isSotdToday ? <><CheckCircle size={20} /> Registrado Hoje</> : <><Sparkles size={20} /> Estou usando hoje</>}
-          </button>
-        </div>
-
-        <div style={{ marginTop: '1.5rem', background: 'rgba(255,255,255,0.05)', padding: '1rem', borderRadius: '12px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-            <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}><Droplet size={14} /> Volumetria Restante</span>
-            <span style={{ fontSize: '0.85rem', fontWeight: 'bold' }}>{perfume.fill_level ?? 100}%</span>
-          </div>
-          <input 
-            type="range" 
-            min="0" 
-            max="100" 
-            step="5"
-            value={perfume.fill_level ?? 100} 
-            onChange={handleFillLevelChange}
-            style={{ width: '100%', accentColor: 'var(--accent)' }}
-          />
-        </div>
+      <div className="glass-card" style={{ marginBottom: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <button 
+          onClick={isSotdToday ? null : handleRecordSotd}
+          disabled={isSotdToday}
+          className="btn-primary"
+          style={{ 
+            width: '100%', 
+            padding: '1rem',
+            background: isSotdToday ? 'rgba(34, 197, 94, 0.2)' : 'var(--accent)',
+            color: isSotdToday ? '#4ade80' : 'white',
+            border: isSotdToday ? '1px solid #4ade80' : 'none',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '0.5rem'
+          }}
+        >
+          {isSotdToday ? <CheckCircle size={20} /> : <CalendarDays size={20} />}
+          {isSotdToday ? 'Registrado no Histórico Hoje' : 'Estou usando hoje'}
+        </button>
       </div>
 
       {isLoading ? (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '3rem 0', color: 'var(--text-muted)' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '3rem 0', color: 'var(--accent)' }}>
           <Loader2 size={32} className="lucide-spin" style={{ marginBottom: '1rem', animation: 'spin 2s linear infinite' }} />
-          <p>A IA está estudando este perfume...</p>
+          <p>Buscando na enciclopédia Fragrantica...</p>
           <style>{`@keyframes spin { 100% { transform: rotate(360deg); } }`}</style>
         </div>
       ) : perfume.full_details ? (
         <div className="perfume-details-content">
+          
+          {/* ACCORDS - Fragrantica Style */}
+          {perfume.full_details.accords && perfume.full_details.accords.length > 0 && (
+            <div style={{ marginBottom: '2.5rem', textAlign: 'center' }}>
+              <h4 style={{ fontSize: '1rem', color: 'var(--text-main)', marginBottom: '1rem' }}>Principais Acordes</h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}>
+                {perfume.full_details.accords.map((accord, idx) => (
+                  <div key={idx} style={{ 
+                    width: `${Math.max(30, accord.value)}%`, 
+                    background: accord.color, 
+                    color: '#fff', 
+                    padding: '4px 0', 
+                    borderRadius: '4px', 
+                    fontSize: '0.85rem', 
+                    fontWeight: 'bold',
+                    textShadow: '0 1px 2px rgba(0,0,0,0.8)',
+                    textTransform: 'lowercase'
+                  }}>
+                    {accord.name}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* DESCRIPTION */}
           <div className="rationale-box" style={{ borderColor: 'var(--accent)', background: 'rgba(167, 139, 250, 0.05)', marginBottom: '2rem' }}>
-            <h4 style={{ color: 'var(--accent)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Info size={18} /> A Essência
-            </h4>
             <p style={{ fontSize: '0.9rem', lineHeight: '1.6', color: 'var(--text-muted)' }}>
               {perfume.full_details.description}
             </p>
-            {perfume.full_details.vibe && (
-              <div style={{ marginTop: '1rem', padding: '0.5rem', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', textAlign: 'center', fontWeight: 'bold', color: 'white', letterSpacing: '2px', textTransform: 'uppercase', fontSize: '0.8rem' }}>
-                Vibe: {perfume.full_details.vibe}
-              </div>
-            )}
             {perfume.full_details.perfumer && (
               <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.1)', display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                 <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}><User size={14} /> {perfume.full_details.perfumer}</span>
@@ -169,75 +183,107 @@ const PerfumeDetails = () => {
             )}
           </div>
 
-          {perfume.full_details.mainAccords && perfume.full_details.mainAccords.length > 0 && (
-            <div style={{ marginBottom: '2rem' }}>
-              <h4 style={{ fontSize: '0.85rem', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Principais Acordes</h4>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                {perfume.full_details.mainAccords.map((accord, idx) => (
-                  <span key={idx} style={{ padding: '0.3rem 0.6rem', background: 'rgba(255,255,255,0.1)', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 'bold', color: 'white' }}>
-                    {accord}
-                  </span>
-                ))}
+          {/* PYRAMID */}
+          {perfume.full_details.pyramid && (
+            <div style={{ marginBottom: '3rem' }}>
+              <h3 className="section-header" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'center', marginBottom: '1.5rem' }}>
+                <Layers size={20} color="var(--accent)" /> Pirâmide do Perfume
+              </h3>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', alignItems: 'center' }}>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '0.5rem' }}>Notas de Topo</div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '1rem' }}>
+                    {perfume.full_details.pyramid.top.map((note, idx) => (
+                      <div key={idx} style={{ background: 'rgba(255,255,255,0.05)', padding: '0.5rem 1rem', borderRadius: '20px', fontSize: '0.9rem' }}>{note}</div>
+                    ))}
+                  </div>
+                </div>
+
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '0.5rem' }}>Notas de Coração</div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '1rem' }}>
+                    {perfume.full_details.pyramid.heart.map((note, idx) => (
+                      <div key={idx} style={{ background: 'rgba(255,255,255,0.05)', padding: '0.5rem 1rem', borderRadius: '20px', fontSize: '0.9rem' }}>{note}</div>
+                    ))}
+                  </div>
+                </div>
+
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '0.5rem' }}>Notas de Base</div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '1rem' }}>
+                    {perfume.full_details.pyramid.base.map((note, idx) => (
+                      <div key={idx} style={{ background: 'rgba(255,255,255,0.05)', padding: '0.5rem 1rem', borderRadius: '20px', fontSize: '0.9rem' }}>{note}</div>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           )}
 
-          <h3 className="section-header" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Sparkles size={20} color="var(--accent)" /> Pirâmide Olfativa
-          </h3>
-          <div className="glass-card" style={{ marginBottom: '2rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            <div>
-              <h4 style={{ fontSize: '0.8rem', color: '#38bdf8', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Notas de Topo (Saída)</h4>
-              <p style={{ margin: 0, fontSize: '0.9rem' }}>{perfume.full_details.topNotes?.join(', ') || 'Não especificado'}</p>
-            </div>
-            <div style={{ height: '1px', background: 'rgba(255,255,255,0.1)' }}></div>
-            <div>
-              <h4 style={{ fontSize: '0.8rem', color: '#4ade80', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Notas de Coração (Corpo)</h4>
-              <p style={{ margin: 0, fontSize: '0.9rem' }}>{perfume.full_details.heartNotes?.join(', ') || 'Não especificado'}</p>
-            </div>
-            <div style={{ height: '1px', background: 'rgba(255,255,255,0.1)' }}></div>
-            <div>
-              <h4 style={{ fontSize: '0.8rem', color: '#f97316', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Notas de Fundo (Base)</h4>
-              <p style={{ margin: 0, fontSize: '0.9rem' }}>{perfume.full_details.baseNotes?.join(', ') || 'Não especificado'}</p>
-            </div>
-          </div>
+          {/* PERFORMANCE BARS */}
+          {perfume.full_details.performance && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginBottom: '2.5rem' }}>
+              <div className="glass-card" style={{ padding: '1rem' }}>
+                <h4 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                  <Activity size={16} color="#38bdf8" /> Longevidade
+                </h4>
+                {renderBar('Fraco', perfume.full_details.performance.longevity.weak, '#94a3b8')}
+                {renderBar('Moderado', perfume.full_details.performance.longevity.moderate, '#38bdf8')}
+                {renderBar('Longa Duração', perfume.full_details.performance.longevity.longLasting, '#4ade80')}
+                {renderBar('Eterno', perfume.full_details.performance.longevity.eternal, '#8b5cf6')}
+              </div>
 
-          <h3 className="section-header">Performance Estimada</h3>
-          <div className="glass-card" style={{ marginBottom: '2rem' }}>
-            <div style={{ marginBottom: '1.5rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                <span style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>Longevidade (Fixação)</span>
-                <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>{perfume.full_details.longevity}%</span>
-              </div>
-              <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', overflow: 'hidden' }}>
-                <div style={{ width: `${perfume.full_details.longevity}%`, height: '100%', background: 'linear-gradient(90deg, var(--accent) 0%, #d8b4fe 100%)', borderRadius: '4px' }}></div>
-              </div>
-            </div>
-            
-            <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                <span style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>Projeção (Sillage)</span>
-                <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>{perfume.full_details.projection}%</span>
-              </div>
-              <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', overflow: 'hidden' }}>
-                <div style={{ width: `${perfume.full_details.projection}%`, height: '100%', background: 'linear-gradient(90deg, #38bdf8 0%, #bae6fd 100%)', borderRadius: '4px' }}></div>
+              <div className="glass-card" style={{ padding: '1rem' }}>
+                <h4 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                  <Activity size={16} color="#f472b6" /> Rastro (Sillage)
+                </h4>
+                {renderBar('Íntimo', perfume.full_details.performance.sillage.intimate, '#94a3b8')}
+                {renderBar('Moderado', perfume.full_details.performance.sillage.moderate, '#f472b6')}
+                {renderBar('Forte', perfume.full_details.performance.sillage.strong, '#f97316')}
+                {renderBar('Enorme', perfume.full_details.performance.sillage.enormous, '#ef4444')}
               </div>
             </div>
-          </div>
+          )}
 
-          <h3 className="section-header">Clima e Ocasião Ideal</h3>
-          <div style={{ display: 'flex', gap: '1rem' }}>
-            <div className="glass-card" style={{ flex: 1, padding: '1rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <Sun size={24} color="#fcd34d" style={{ marginBottom: '0.5rem' }} />
-              <h4 style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.2rem' }}>Uso Ideal</h4>
-              <p style={{ margin: 0, fontWeight: 'bold', fontSize: '0.9rem' }}>{perfume.full_details.timeOfDay || 'Não especificado'}</p>
+          {/* DEMOGRAPHICS */}
+          {perfume.full_details.demographics && (
+            <div style={{ display: 'flex', gap: '1rem', marginBottom: '2.5rem' }}>
+              <div className="glass-card" style={{ flex: 1, padding: '1rem' }}>
+                <h4 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', marginBottom: '1rem', textTransform: 'uppercase' }}>
+                  <Users size={14} color="var(--accent)" /> Gênero
+                </h4>
+                {renderBar('Feminino', perfume.full_details.demographics.gender.female, '#f472b6')}
+                {renderBar('Unissex', perfume.full_details.demographics.gender.unisex, '#a855f7')}
+                {renderBar('Masculino', perfume.full_details.demographics.gender.male, '#38bdf8')}
+              </div>
+              <div className="glass-card" style={{ flex: 1, padding: '1rem' }}>
+                <h4 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', marginBottom: '1rem', textTransform: 'uppercase' }}>
+                  <DollarSign size={14} color="#4ade80" /> Valor
+                </h4>
+                {renderBar('Caro', perfume.full_details.demographics.priceValue.expensive, '#ef4444')}
+                {renderBar('OK', perfume.full_details.demographics.priceValue.ok, '#facc15')}
+                {renderBar('Ótimo', perfume.full_details.demographics.priceValue.great, '#4ade80')}
+              </div>
             </div>
-            <div className="glass-card" style={{ flex: 1, padding: '1rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <Calendar size={24} color="#6ee7b7" style={{ marginBottom: '0.5rem' }} />
-              <h4 style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.2rem' }}>Estações</h4>
-              <p style={{ margin: 0, fontWeight: 'bold', fontSize: '0.9rem' }}>{perfume.full_details.bestSeasons?.join(', ') || 'Não especificado'}</p>
+          )}
+
+          {/* SIMILAR PERFUMES */}
+          {perfume.full_details.similar && perfume.full_details.similar.length > 0 && (
+            <div style={{ marginBottom: '3rem' }}>
+              <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem', color: 'var(--text-main)' }}>Este Perfume me Lembra do...</h3>
+              <div style={{ display: 'flex', overflowX: 'auto', gap: '1rem', paddingBottom: '1rem' }}>
+                {perfume.full_details.similar.map((sim, idx) => (
+                  <div key={idx} className="glass-card" style={{ minWidth: '140px', padding: '1rem', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    <div style={{ width: '50px', height: '50px', background: 'rgba(255,255,255,0.1)', borderRadius: '8px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Layers size={24} color="var(--text-muted)" />
+                    </div>
+                    <div style={{ fontSize: '0.85rem', fontWeight: 'bold' }}>{sim}</div>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           <h3 className="section-header" style={{ marginTop: '2rem' }}>Meu Diário Olfativo</h3>
           <div className="glass-card">
@@ -248,28 +294,34 @@ const PerfumeDetails = () => {
                   size={32} 
                   onClick={() => setLocalRating(star)}
                   fill={localRating >= star ? '#fcd34d' : 'transparent'}
-                  color={localRating >= star ? '#fcd34d' : 'rgba(255,255,255,0.2)'}
+                  color={localRating >= star ? '#fcd34d' : 'var(--text-muted)'}
                   style={{ cursor: 'pointer', transition: 'all 0.2s ease' }}
                 />
               ))}
             </div>
+            
             <textarea 
               value={localReview}
               onChange={(e) => setLocalReview(e.target.value)}
-              placeholder="Quais as suas memórias com esse perfume? O que você sente quando usa?"
-              style={{ width: '100%', height: '100px', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.2)', color: 'white', resize: 'vertical', marginBottom: '1rem' }}
-            ></textarea>
+              placeholder="O que você acha dessa fragrância? Quando costuma usar?"
+              className="form-input"
+              style={{ width: '100%', minHeight: '100px', resize: 'vertical', marginBottom: '1rem', fontSize: '0.9rem' }}
+            />
+            
             <button 
-              onClick={handleSaveReview}
+              onClick={handleSaveReview} 
               disabled={isSavingReview}
-              style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', background: 'var(--accent)', color: 'white', border: 'none', fontWeight: 'bold' }}
+              className="btn-primary" 
+              style={{ width: '100%' }}
             >
-              {isSavingReview ? 'Salvando...' : 'Salvar Diário'}
+              {isSavingReview ? 'Salvando...' : 'Salvar Avaliação'}
             </button>
           </div>
 
         </div>
-      ) : null}
+      ) : (
+        <p style={{ textAlign: 'center', color: 'var(--text-muted)' }}>Sem detalhes adicionais disponíveis.</p>
+      )}
     </div>
   );
 };

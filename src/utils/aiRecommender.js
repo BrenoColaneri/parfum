@@ -179,17 +179,26 @@ export const fetchPerfumeDetails = async (perfumeName) => {
       setTimeout(() => {
         resolve({
           description: "Um perfume clássico e atemporal com notas marcantes que combinam perfeitamente para qualquer ocasião.",
-          topNotes: ["Limão Siciliano", "Bergamota", "Pimenta Rosa"],
-          heartNotes: ["Lavanda", "Gerânio", "Jasmim"],
-          baseNotes: ["Sândalo", "Cedro", "Fava Tonka"],
-          longevity: 80, // percentage 0-100
-          projection: 70, // percentage 0-100
-          vibe: "Elegante",
+          accords: [
+            {"name": "cítrico", "color": "#facc15", "value": 100},
+            {"name": "aromático", "color": "#8b5cf6", "value": 75}
+          ],
+          pyramid: {
+            "top": ["🍋 Limão Siciliano", "🌿 Bergamota"],
+            "heart": ["🪻 Lavanda", "🌸 Jasmim"],
+            "base": ["🪵 Sândalo", "🌲 Cedro"]
+          },
+          performance: {
+            longevity: {weak: 10, moderate: 40, longLasting: 40, eternal: 10},
+            sillage: {intimate: 10, moderate: 50, strong: 30, enormous: 10}
+          },
+          demographics: {
+            gender: {female: 10, unisex: 30, male: 60},
+            priceValue: {expensive: 30, ok: 40, good: 20, great: 10}
+          },
+          similar: ["Blue de Chanel", "Dior Sauvage"],
           perfumer: "Jacques Polge",
-          releaseYear: "2010",
-          mainAccords: ["Cítrico", "Aromático", "Amadeirado"],
-          timeOfDay: "Dia",
-          bestSeasons: ["Primavera", "Verão"]
+          releaseYear: "2010"
         });
       }, 1500);
     });
@@ -202,20 +211,32 @@ export const fetchPerfumeDetails = async (perfumeName) => {
 Você é uma enciclopédia de perfumaria de luxo, agindo como o banco de dados do Fragrantica.
 Me dê todas as informações detalhadas sobre o perfume: "${perfumeName}".
 
-Retorne EXATAMENTE um JSON válido com a seguinte estrutura e nada mais:
+Retorne EXATAMENTE um JSON válido com a seguinte estrutura e NADA mais.
+IMPORTANTE: Para as notas (pyramid), inclua sempre um EMOJI representando o ingrediente seguido do nome. Ex: "🍋 Limão Siciliano".
+
 {
-  "description": "Uma descrição poética e detalhada sobre o perfume (2 a 3 parágrafos curtos).",
-  "topNotes": ["Nota 1", "Nota 2", "Nota 3"],
-  "heartNotes": ["Nota 1", "Nota 2", "Nota 3"],
-  "baseNotes": ["Nota 1", "Nota 2", "Nota 3"],
-  "longevity": 85,
-  "projection": 75,
-  "vibe": "Uma palavra ou frase curta (ex: Poderoso, Sedutor)",
+  "description": "Uma descrição poética e detalhada sobre o perfume (2 parágrafos).",
+  "accords": [
+    {"name": "Nome do acorde (ex: cítrico)", "color": "Cor em HEX (ex: #facc15)", "value": 100},
+    {"name": "frutado", "color": "#ea580c", "value": 85},
+    {"name": "couro", "color": "#78350f", "value": 60}
+  ],
+  "pyramid": {
+    "top": ["Emoji e Nota", "Emoji e Nota"],
+    "heart": ["Emoji e Nota", "Emoji e Nota"],
+    "base": ["Emoji e Nota", "Emoji e Nota"]
+  },
+  "performance": {
+    "longevity": {"weak": 5, "moderate": 20, "longLasting": 60, "eternal": 15},
+    "sillage": {"intimate": 5, "moderate": 30, "strong": 50, "enormous": 15}
+  },
+  "demographics": {
+    "gender": {"female": 5, "unisex": 20, "male": 75},
+    "priceValue": {"expensive": 10, "ok": 40, "good": 30, "great": 20}
+  },
+  "similar": ["Nome do Perfume 1", "Nome do Perfume 2", "Nome do Perfume 3"],
   "perfumer": "Nome do Perfumista",
-  "releaseYear": "Ano de lançamento (ex: 2010)",
-  "mainAccords": ["Acorde 1", "Acorde 2", "Acorde 3", "Acorde 4"],
-  "timeOfDay": "Dia, Noite, ou Dia e Noite",
-  "bestSeasons": ["Primavera", "Verão", "Outono", "Inverno"]
+  "releaseYear": "Ano de lançamento (ex: 2010)"
 }
 `;
 
