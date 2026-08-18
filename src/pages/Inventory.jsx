@@ -12,41 +12,6 @@ const Inventory = () => {
   const [newPerfumePrice, setNewPerfumePrice] = useState('');
   const [isSearchingAI, setIsSearchingAI] = useState(false);
 
-  const summerSpring = [];
-  const fallWinter = [];
-  const signature = [];
-
-  inventory.forEach(p => {
-    const t = (p.type || '').toLowerCase();
-    
-    // Explicit Versatiles (combinations of heavy and light)
-    if (t.includes('amadeirado fresco') || t.includes('especiado fresco') || t.includes('amadeirado aromático') || t.includes('chipre') || t.includes('floral')) {
-      signature.push(p);
-      return;
-    }
-
-    // Heavy / Cold
-    if (t.includes('couro') || t.includes('oriental') || t.includes('gourmand') || t.includes('tabaco') || t.includes('âmbar') || t.includes('quente')) {
-      fallWinter.push(p);
-      return;
-    }
-
-    // Fresh / Hot
-    if (t.includes('cítrico') || t.includes('aquático') || t.includes('marinho') || t.includes('fresco') || t.includes('verde') || t.includes('frutado')) {
-      summerSpring.push(p);
-      return;
-    }
-
-    // Base Woods and Spices without fresh modifiers are usually Fall/Winter
-    if (t.includes('amadeirado') || t.includes('especiado')) {
-      fallWinter.push(p);
-      return;
-    }
-
-    // Default
-    signature.push(p);
-  });
-  
   // Multimodal state
   const [imageBase64, setImageBase64] = useState(null);
   const [imageMimeType, setImageMimeType] = useState(null);
@@ -240,41 +205,8 @@ const Inventory = () => {
         {inventory.length === 0 ? (
           <p style={{ textAlign: 'center', color: 'var(--text-muted)', marginTop: '2rem' }}>Sua biblioteria está vazia.</p>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-            
-            {summerSpring.length > 0 && (
-              <div>
-                <h3 style={{ fontSize: '1.1rem', color: '#38bdf8', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', borderBottom: '1px solid rgba(56, 189, 248, 0.3)', paddingBottom: '0.5rem' }}>
-                  ☀️ Verão & Primavera
-                </h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                  {summerSpring.map(perfume => renderPerfumeCard(perfume))}
-                </div>
-              </div>
-            )}
-
-            {fallWinter.length > 0 && (
-              <div>
-                <h3 style={{ fontSize: '1.1rem', color: '#f97316', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', borderBottom: '1px solid rgba(249, 115, 22, 0.3)', paddingBottom: '0.5rem' }}>
-                  ❄️ Outono & Inverno
-                </h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                  {fallWinter.map(perfume => renderPerfumeCard(perfume))}
-                </div>
-              </div>
-            )}
-
-            {signature.length > 0 && (
-              <div>
-                <h3 style={{ fontSize: '1.1rem', color: '#a855f7', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', borderBottom: '1px solid rgba(168, 85, 247, 0.3)', paddingBottom: '0.5rem' }}>
-                  👔 Assinatura & Versáteis
-                </h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                  {signature.map(perfume => renderPerfumeCard(perfume))}
-                </div>
-              </div>
-            )}
-
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {[...inventory].sort((a, b) => a.name.localeCompare(b.name)).map(perfume => renderPerfumeCard(perfume))}
           </div>
         )}
       </div>
