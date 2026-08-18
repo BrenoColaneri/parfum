@@ -16,8 +16,8 @@ const Wishlist = () => {
       try {
         const enrichedData = await enrichPerfumeData({ perfumeName: newItem.name });
         
-        const query = `${enrichedData.name} ${enrichedData.brand || ""} ${newItem.volume}`.trim();
-        const autoLink = `https://www.google.com/search?q=${encodeURIComponent('site:pequiperfumes.com.br OR site:chiceperfumados.com.br OR site:thekingofparfums.com.br ' + query)}`;
+        const query = `${enrichedData.name} ${enrichedData.brand || ""} ${newItem.volume} -decant -amostra -fracionado -inspiração`.trim();
+        const autoLink = `https://www.google.com/search?tbm=shop&q=${encodeURIComponent(query)}`;
 
         await addToWishlist({
           name: enrichedData.name,
@@ -26,7 +26,7 @@ const Wishlist = () => {
           type: enrichedData.type,
           icon: enrichedData.icon,
           volume: newItem.volume,
-          link: newItem.link || autoLink // Usa o link manual ou gera um link de busca focada nas lojas confiáveis
+          link: newItem.link || autoLink // Usa o link manual ou gera um link otimizado do Google Shopping
         });
         
         setShowAddForm(false);
