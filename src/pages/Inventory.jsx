@@ -12,9 +12,40 @@ const Inventory = () => {
   const [newPerfumePrice, setNewPerfumePrice] = useState('');
   const [isSearchingAI, setIsSearchingAI] = useState(false);
 
-  const summerSpring = inventory.filter(p => p.type.includes('Fresco') || p.type.includes('Cítrico') || p.type.includes('Aquático') || p.type.includes('Verde'));
-  const fallWinter = inventory.filter(p => p.type.includes('Amadeirado') || p.type.includes('Oriental') || p.type.includes('Especiado') || p.type.includes('Couro') || p.type.includes('Quente'));
-  const signature = inventory.filter(p => !summerSpring.includes(p) && !fallWinter.includes(p));
+  const summerSpring = [];
+  const fallWinter = [];
+  const signature = [];
+
+  inventory.forEach(p => {
+    const t = (p.type || '').toLowerCase();
+    
+    // Explicit Versatiles (combinations of heavy and light)
+    if (t.includes('amadeirado fresco') || t.includes('especiado fresco') || t.includes('amadeirado aromático') || t.includes('chipre') || t.includes('floral')) {
+      signature.push(p);
+      return;
+    }
+
+    // Heavy / Cold
+    if (t.includes('couro') || t.includes('oriental') || t.includes('gourmand') || t.includes('tabaco') || t.includes('âmbar') || t.includes('quente')) {
+      fallWinter.push(p);
+      return;
+    }
+
+    // Fresh / Hot
+    if (t.includes('cítrico') || t.includes('aquático') || t.includes('marinho') || t.includes('fresco') || t.includes('verde') || t.includes('frutado')) {
+      summerSpring.push(p);
+      return;
+    }
+
+    // Base Woods and Spices without fresh modifiers are usually Fall/Winter
+    if (t.includes('amadeirado') || t.includes('especiado')) {
+      fallWinter.push(p);
+      return;
+    }
+
+    // Default
+    signature.push(p);
+  });
   
   // Multimodal state
   const [imageBase64, setImageBase64] = useState(null);
