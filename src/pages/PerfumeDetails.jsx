@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Loader2, Info, User, CalendarDays, Star, Layers, Activity, Users, DollarSign, Plus, CheckCircle, Droplets, Trees, Flame, Wind, FlaskConical } from 'lucide-react';
+import { ArrowLeft, Loader2, Info, User, CalendarDays, Star, Layers, Activity, Users, DollarSign, Plus, CheckCircle, Droplets, Trees, Flame, Wind, FlaskConical, Leaf } from 'lucide-react';
 import { useAppContext } from '../context/AppProvider';
 import { fetchPerfumeDetails } from '../utils/aiRecommender';
 
@@ -95,12 +95,14 @@ const PerfumeDetails = () => {
     </div>
   );
 
-  const renderIcon = (type) => {
-    if (!type) return <FlaskConical size={64} color="var(--accent)" />;
-    if (type.includes('Fresco') || type.includes('Cítrico') || type.includes('Aquático')) return <Droplets size={64} color="#38bdf8" />;
-    if (type.includes('Amadeirado')) return <Trees size={64} color="#4ade80" />;
-    if (type.includes('Oriental') || type.includes('Especiado') || type.includes('Quente')) return <Flame size={64} color="#f97316" />;
-    return <Wind size={64} color="#cbd5e1" />;
+  const getIcon = (iconName) => {
+    switch(iconName) {
+      case 'Trees': return <Trees size={64} color="var(--accent)" />;
+      case 'Flame': return <Flame size={64} color="#f97316" />;
+      case 'Wind': return <Wind size={64} color="#cbd5e1" />;
+      case 'Leaf': return <Leaf size={64} color="#4ade80" />;
+      case 'Droplets': default: return <Droplets size={64} color="#38bdf8" />;
+    }
   };
 
   return (
@@ -117,7 +119,7 @@ const PerfumeDetails = () => {
             <img src={perfume.image} alt={perfume.name} style={{ width: '120px', height: '120px', objectFit: 'cover', borderRadius: '12px', border: '2px solid rgba(255,255,255,0.1)' }} />
           ) : (
             <div style={{ width: '120px', height: '120px', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.1)' }}>
-              {renderIcon(perfume.type)}
+              {getIcon(perfume.icon)}
             </div>
           )}
         </div>
