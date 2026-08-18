@@ -16,8 +16,8 @@ const Wishlist = () => {
       try {
         const enrichedData = await enrichPerfumeData({ perfumeName: newItem.name });
         
-        const query = `${enrichedData.name} ${enrichedData.brand || ""} ${newItem.volume} -decant -amostra -fracionado -inspiração`.trim();
-        const autoLink = `https://www.google.com/search?tbm=shop&q=${encodeURIComponent(query)}`;
+        const query = `comprar ${enrichedData.name} ${enrichedData.brand || ""} ${newItem.volume} -decant -amostra -fracionado -inspiração`.trim();
+        const autoLink = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
 
         await addToWishlist({
           name: enrichedData.name,
