@@ -211,7 +211,10 @@ const Inventory = () => {
         )}
       </div>
 
-      <button className="fab" onClick={() => setShowAddForm(true)}>
+      <button className="fab" onClick={() => {
+        setShowAddForm(true);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }}>
         <Plus size={24} />
       </button>
     </div>
