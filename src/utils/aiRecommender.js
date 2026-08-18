@@ -283,3 +283,44 @@ Retorne EXATAMENTE um array JSON válido com esta estrutura e nada mais:
     return [];
   }
 };
+
+export const recommendLayering = async (inventory) => {
+  if (!inventory || inventory.length < 2) {
+    return null;
+  }
+
+  const inventorySummary = inventory.map(p => `- ${p.name} da ${p.brand} (${p.type})`).join('\n');
+
+  const promptText = `
+Você é um mestre perfumista especialista na arte de "Layering" (misturar dois perfumes diferentes na pele).
+Abaixo está a coleção de perfumes do usuário:
+${inventorySummary}
+
+Escolha EXATAMENTE 2 perfumes diferentes dessa lista que, quando borrifados juntos (um por cima do outro), criam uma terceira fragrância espetacular. 
+Eles devem se complementar (ex: um cítrico cortando o doce de outro, ou um couro dando peso a um floral).
+Crie um nome imaginativo para essa nova mistura.
+
+Retorne EXATAMENTE um JSON válido com esta estrutura e nada mais:
+{
+  "perfume1_name": "Nome do primeiro perfume escolhido (igual está na lista)",
+  "perfume2_name": "Nome do segundo perfume escolhido (igual está na lista)",
+  "mix_name": "Nome criativo para a mistura (ex: Oásis Noturno)",
+  "rationale": "Explique em 2 a 3 frases românticas e descritivas por que essas duas fragrâncias funcionam perfeitamente juntas."
+}
+`;
+
+  try {
+    const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash" });
+    const result = await model.generateContent(promptText);
+    const text = await result.response.text();
+    
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      return JSON.parse(jsonMatch[0]);
+    }
+    return JSON.parse(text);
+  } catch (error) {
+    console.error("Error generating layering recommendation:", error);
+    return null;
+  }
+};

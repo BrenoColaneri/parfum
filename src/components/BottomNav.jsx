@@ -41,7 +41,7 @@ const BottomNav = () => {
         className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
       >
         <CalendarDays size={24} />
-        <span>Histórico</span>
+        <span>Perfil</span>
       </NavLink>
     </nav>
   );

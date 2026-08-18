@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { Info, Flame, Trees, CloudOff, ArrowLeft, Droplet, CheckCircle2, Sparkles, Loader2, Search } from 'lucide-react';
-import { recommendNewPerfumes } from '../utils/aiRecommender';
+import { recommendNewPerfumes, recommendLayering } from '../utils/aiRecommender';
 import { useAppContext } from '../context/AppProvider';
 
 const Analysis = () => {
@@ -13,6 +13,8 @@ const Analysis = () => {
   const [activeTab, setActiveTab] = useState('uso');
   const [discoveries, setDiscoveries] = useState([]);
   const [isDiscovering, setIsDiscovering] = useState(false);
+  const [layeringResult, setLayeringResult] = useState(null);
+  const [isLayering, setIsLayering] = useState(false);
 
   if (!recommendation) {
     return <Navigate to="/" />;
@@ -44,6 +46,18 @@ const Analysis = () => {
     }
   }, [activeTab, inventory, discoveries.length]);
 
+  useEffect(() => {
+    if (activeTab === 'laboratorio' && !layeringResult) {
+      const getLayering = async () => {
+        setIsLayering(true);
+        const result = await recommendLayering(inventory);
+        setLayeringResult(result);
+        setIsLayering(false);
+      };
+      getLayering();
+    }
+  }, [activeTab, inventory, layeringResult]);
+
   const handleConfirmUse = async () => {
     const todayStr = new Date().toISOString().split('T')[0];
     await recordSotd(perfume.id, todayStr);
@@ -65,18 +79,24 @@ const Analysis = () => {
         </h2>
       </div>
 
-      <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.5rem' }}>
+      <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.5rem', overflowX: 'auto', whiteSpace: 'nowrap' }}>
         <button 
           onClick={() => setActiveTab('uso')}
           style={{ flex: 1, padding: '0.5rem', background: 'none', border: 'none', color: activeTab === 'uso' ? 'var(--accent)' : 'var(--text-muted)', fontWeight: activeTab === 'uso' ? 'bold' : 'normal', borderBottom: activeTab === 'uso' ? '2px solid var(--accent)' : 'none' }}
         >
-          O Que Usar Hoje
+          O Que Usar
         </button>
         <button 
           onClick={() => setActiveTab('descobrir')}
           style={{ flex: 1, padding: '0.5rem', background: 'none', border: 'none', color: activeTab === 'descobrir' ? 'var(--accent)' : 'var(--text-muted)', fontWeight: activeTab === 'descobrir' ? 'bold' : 'normal', borderBottom: activeTab === 'descobrir' ? '2px solid var(--accent)' : 'none' }}
         >
-          Descobrir Novos
+          Descobrir
+        </button>
+        <button 
+          onClick={() => setActiveTab('laboratorio')}
+          style={{ flex: 1, padding: '0.5rem', background: 'none', border: 'none', color: activeTab === 'laboratorio' ? 'var(--accent)' : 'var(--text-muted)', fontWeight: activeTab === 'laboratorio' ? 'bold' : 'normal', borderBottom: activeTab === 'laboratorio' ? '2px solid var(--accent)' : 'none', display: 'flex', alignItems: 'center', gap: '0.25rem', justifyContent: 'center' }}
+        >
+          <Sparkles size={16} /> Laboratório
         </button>
       </div>
 
@@ -183,6 +203,48 @@ const Analysis = () => {
             ))
           ) : (
             <p style={{ textAlign: 'center', color: 'var(--text-muted)' }}>Não foi possível carregar as recomendações no momento.</p>
+          )}
+        </div>
+      )}
+
+      {activeTab === 'laboratorio' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
+            <Sparkles size={32} color="#a855f7" style={{ marginBottom: '0.5rem' }} />
+            <h3 style={{ margin: 0, fontSize: '1.2rem' }}>O Laboratório do Alquimista</h3>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>A IA está descobrindo a combinação perfeita entre dois frascos da sua coleção...</p>
+          </div>
+
+          {isLayering ? (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '3rem 0', color: 'var(--text-muted)' }}>
+              <Loader2 size={32} className="lucide-spin" style={{ marginBottom: '1rem', animation: 'spin 2s linear infinite' }} />
+              <p>Misturando essências...</p>
+              <style>{`@keyframes spin { 100% { transform: rotate(360deg); } }`}</style>
+            </div>
+          ) : layeringResult ? (
+            <div className="glass-card" style={{ border: '2px dashed #a855f7', background: 'rgba(168, 85, 247, 0.05)', textAlign: 'center' }}>
+              <h4 style={{ color: '#d8b4fe', fontSize: '1.4rem', margin: '0 0 1.5rem 0', textTransform: 'uppercase', letterSpacing: '2px' }}>
+                {layeringResult.mix_name}
+              </h4>
+              
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+                <div style={{ flex: 1, padding: '1rem', background: 'rgba(0,0,0,0.4)', borderRadius: '12px' }}>
+                  <Droplet size={24} color="#38bdf8" style={{ marginBottom: '0.5rem' }} />
+                  <div style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'white' }}>{layeringResult.perfume1_name}</div>
+                </div>
+                <div style={{ fontWeight: 'bold', fontSize: '1.5rem', color: '#a855f7' }}>+</div>
+                <div style={{ flex: 1, padding: '1rem', background: 'rgba(0,0,0,0.4)', borderRadius: '12px' }}>
+                  <Flame size={24} color="#fbbf24" style={{ marginBottom: '0.5rem' }} />
+                  <div style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'white' }}>{layeringResult.perfume2_name}</div>
+                </div>
+              </div>
+
+              <div style={{ background: 'rgba(0,0,0,0.3)', padding: '1rem', borderRadius: '8px', fontSize: '0.9rem', color: '#e9d5ff', fontStyle: 'italic', lineHeight: '1.5' }}>
+                "{layeringResult.rationale}"
+              </div>
+            </div>
+          ) : (
+            <p style={{ textAlign: 'center', color: 'var(--text-muted)' }}>Você precisa de pelo menos 2 perfumes na coleção para fazer misturas.</p>
           )}
         </div>
       )}
