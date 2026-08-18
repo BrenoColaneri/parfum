@@ -9,6 +9,7 @@ const Inventory = () => {
   const { inventory, addPerfume, removePerfume } = useAppContext();
   const [showAddForm, setShowAddForm] = useState(false);
   const [newPerfumeName, setNewPerfumeName] = useState('');
+  const [newPerfumePrice, setNewPerfumePrice] = useState('');
   const [isSearchingAI, setIsSearchingAI] = useState(false);
   
   // Multimodal state
@@ -51,11 +52,13 @@ const Inventory = () => {
           concentration: enrichedData.concentration,
           type: enrichedData.type,
           icon: enrichedData.icon,
-          notes: enrichedData.notes
+          notes: enrichedData.notes,
+          pricePaid: newPerfumePrice ? parseFloat(newPerfumePrice) : 0
         });
         
         setShowAddForm(false);
         setNewPerfumeName('');
+        setNewPerfumePrice('');
         removeImage();
       } catch (error) {
         alert('Erro ao buscar perfume. Tente novamente.');
@@ -115,6 +118,17 @@ const Inventory = () => {
             />
           </div>
 
+          <div style={{ marginBottom: '1rem' }}>
+            <input 
+              type="number" 
+              placeholder="Preço pago (opcional) Ex: 350.00" 
+              value={newPerfumePrice}
+              onChange={(e) => setNewPerfumePrice(e.target.value)}
+              disabled={isSearchingAI}
+              style={{ width: '100%', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.2)', color: 'white' }}
+            />
+          </div>
+
           {imageBase64 && (
             <div style={{ position: 'relative', marginBottom: '1rem', display: 'inline-block' }}>
               <img 
@@ -139,7 +153,7 @@ const Inventory = () => {
               {isSearchingAI ? 'Analisando com IA...' : 'Adicionar ao Acervo'}
             </button>
             <button 
-              onClick={() => { setShowAddForm(false); removeImage(); setNewPerfumeName(''); }} 
+              onClick={() => { setShowAddForm(false); removeImage(); setNewPerfumeName(''); setNewPerfumePrice(''); }} 
               disabled={isSearchingAI}
               style={{ padding: '0.75rem 1.5rem', borderRadius: '8px', background: '#334155', color: 'white', border: 'none' }}>
               Cancelar

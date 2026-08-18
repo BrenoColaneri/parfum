@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { Info, Flame, Trees, CloudOff, ArrowLeft, Droplet, CheckCircle2, Sparkles, Loader2, Search } from 'lucide-react';
-import { recommendNewPerfumes, recommendLayering } from '../utils/aiRecommender';
+import { recommendNewPerfumes, recommendLayering, findClones } from '../utils/aiRecommender';
 import { useAppContext } from '../context/AppProvider';
 
 const Analysis = () => {
@@ -15,6 +15,10 @@ const Analysis = () => {
   const [isDiscovering, setIsDiscovering] = useState(false);
   const [layeringResult, setLayeringResult] = useState(null);
   const [isLayering, setIsLayering] = useState(false);
+  
+  const [clones, setClones] = useState([]);
+  const [isFindingClones, setIsFindingClones] = useState(false);
+  const [cloneSearchText, setCloneSearchText] = useState('');
 
   if (!recommendation) {
     return <Navigate to="/" />;
@@ -64,6 +68,14 @@ const Analysis = () => {
     navigate('/history');
   };
 
+  const handleSearchClones = async () => {
+    if (!cloneSearchText) return;
+    setIsFindingClones(true);
+    const results = await findClones(cloneSearchText);
+    setClones(results);
+    setIsFindingClones(false);
+  };
+
   return (
     <div className="page-wrapper" style={{ paddingBottom: '3rem' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
@@ -97,6 +109,12 @@ const Analysis = () => {
           style={{ flex: 1, padding: '0.5rem', background: 'none', border: 'none', color: activeTab === 'laboratorio' ? 'var(--accent)' : 'var(--text-muted)', fontWeight: activeTab === 'laboratorio' ? 'bold' : 'normal', borderBottom: activeTab === 'laboratorio' ? '2px solid var(--accent)' : 'none', display: 'flex', alignItems: 'center', gap: '0.25rem', justifyContent: 'center' }}
         >
           <Sparkles size={16} /> Laboratório
+        </button>
+        <button 
+          onClick={() => setActiveTab('clones')}
+          style={{ flex: 1, padding: '0.5rem', background: 'none', border: 'none', color: activeTab === 'clones' ? 'var(--accent)' : 'var(--text-muted)', fontWeight: activeTab === 'clones' ? 'bold' : 'normal', borderBottom: activeTab === 'clones' ? '2px solid var(--accent)' : 'none', display: 'flex', alignItems: 'center', gap: '0.25rem', justifyContent: 'center' }}
+        >
+          <Search size={16} /> Clones
         </button>
       </div>
 
@@ -245,6 +263,54 @@ const Analysis = () => {
             </div>
           ) : (
             <p style={{ textAlign: 'center', color: 'var(--text-muted)' }}>Você precisa de pelo menos 2 perfumes na coleção para fazer misturas.</p>
+          )}
+        </div>
+      )}
+
+      {activeTab === 'clones' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <h3 className="subtitle">Encontre o Melhor Contratipo</h3>
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+            Digite o nome de um perfume importado caro e a IA te mostrará as melhores opções acessíveis no Brasil.
+          </p>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <input 
+              type="text"
+              placeholder="Ex: Tom Ford Oud Wood"
+              value={cloneSearchText}
+              onChange={(e) => setCloneSearchText(e.target.value)}
+              style={{ flex: 1, padding: '0.75rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.2)', color: 'white' }}
+            />
+            <button 
+              onClick={handleSearchClones}
+              disabled={isFindingClones}
+              className="btn-primary"
+            >
+              Buscar
+            </button>
+          </div>
+
+          {isFindingClones ? (
+             <div style={{ textAlign: 'center', padding: '2rem 0' }}>
+               <Loader2 size={32} className="lucide-spin" style={{ color: 'var(--accent)', animation: 'spin 2s linear infinite', margin: '0 auto' }} />
+               <p style={{ color: 'var(--accent)', marginTop: '1rem' }}>Vasculhando o mercado...</p>
+               <style>{`@keyframes spin { 100% { transform: rotate(360deg); } }`}</style>
+             </div>
+          ) : clones.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem' }}>
+              {clones.map((c, i) => (
+                <div key={i} className="glass-card" style={{ padding: '1rem', borderLeft: '4px solid var(--accent)' }}>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 'bold' }}>{c.brand}</div>
+                  <h4 style={{ fontSize: '1.2rem', margin: '0.25rem 0' }}>{c.name}</h4>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                    <span style={{ fontSize: '0.8rem', background: 'rgba(56, 189, 248, 0.2)', color: '#38bdf8', padding: '2px 8px', borderRadius: '12px', fontWeight: 'bold' }}>Similaridade: {c.similarity}</span>
+                  </div>
+                  <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: 0 }}>
+                    <strong>Por que é bom?</strong> {c.pros}
+                  </p>
+                </div>
+              ))}
+            </div>
           )}
         </div>
       )}

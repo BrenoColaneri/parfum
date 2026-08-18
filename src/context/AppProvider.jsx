@@ -161,6 +161,7 @@ export const AppProvider = ({ children }) => {
       type: perfume.type, 
       icon: perfume.icon, 
       notes: perfume.notes || '',
+      price_paid: perfume.pricePaid || 0,
       user_id: user.id 
     };
     const { data, error } = await supabase.from('inventory').insert([newPerfume]).select();
@@ -182,6 +183,15 @@ export const AppProvider = ({ children }) => {
       setInventory(inventory.map(p => p.id === id ? { ...p, full_details: details } : p));
     } else if (error) {
       console.error('Error updating details in Supabase:', error);
+    }
+  };
+
+  const updatePricePaid = async (id, pricePaid) => {
+    const { data, error } = await supabase.from('inventory').update({ price_paid: pricePaid }).match({ id }).select();
+    if (!error && data) {
+      setInventory(inventory.map(p => p.id === id ? { ...p, price_paid: pricePaid } : p));
+    } else if (error) {
+      console.error('Error updating price_paid in Supabase:', error);
     }
   };
 

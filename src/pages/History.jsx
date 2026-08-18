@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { CalendarDays, ArrowLeft, BarChart3, Trophy, PieChart as PieChartIcon } from 'lucide-react';
+import { CalendarDays, ArrowLeft, BarChart3, Trophy, PieChart as PieChartIcon, Wallet } from 'lucide-react';
 import { useAppContext } from '../context/AppProvider';
 import { useNavigate } from 'react-router-dom';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
@@ -71,6 +71,10 @@ const History = () => {
       value,
       color: colors[name] || "#94a3b8"
     }));
+  }, [inventory]);
+
+  const totalInvested = useMemo(() => {
+    return inventory.reduce((total, p) => total + (p.price_paid || 0), 0);
   }, [inventory]);
 
   return (
@@ -145,6 +149,18 @@ const History = () => {
             <div className="glass-card" style={{ flex: 1, textAlign: 'center', padding: '1rem' }}>
               <div style={{ fontSize: '2rem', fontWeight: 'bold', color: 'white' }}>{sotdHistory.length}</div>
               <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Dias Registrados</div>
+            </div>
+          </div>
+
+          <div className="glass-card" style={{ background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(20, 83, 45, 0.15))', border: '1px solid rgba(34, 197, 94, 0.3)' }}>
+            <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', fontSize: '1.1rem', color: '#4ade80' }}>
+              <Wallet size={20} /> Controle de Investimento
+            </h3>
+            <div style={{ textAlign: 'center', padding: '0.5rem 0' }}>
+              <div style={{ fontSize: '0.75rem', color: '#86efac', marginBottom: '0.25rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Valor Total da Coleção</div>
+              <div style={{ fontSize: '2.2rem', fontWeight: 'bold', color: 'white', textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>
+                R$ {totalInvested.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </div>
             </div>
           </div>
 

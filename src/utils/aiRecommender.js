@@ -257,6 +257,55 @@ IMPORTANTE: Para as notas (pyramid), inclua sempre um EMOJI representando o ingr
   }
 };
 
+export const findClones = async (perfumeName) => {
+  if (!genAI || !import.meta.env.VITE_GEMINI_API_KEY) {
+    // Mock
+    return new Promise(resolve => {
+      setTimeout(() => {
+        resolve([
+          { name: "CDNI Man Pure", brand: "Armaf", similarity: "95%", pros: "Mais cítrico e duradouro." },
+          { name: "L'Aventure", brand: "Al Haramain", similarity: "90%", pros: "Equilíbrio perfeito de fumaça." }
+        ]);
+      }, 1500);
+    });
+  }
+
+  try {
+    const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash-lite" });
+
+    const promptText = `
+Você é um especialista em contratipos e clones de perfumes (dupes) disponíveis no Brasil.
+O usuário quer opções acessíveis parecidas com o perfume: "${perfumeName}".
+
+Liste até 4 dos melhores contratipos ou inspirações de marcas como Zara, Nuancielo, Thera Cosméticos, In The Box, Primacial, Pocket Parfum, Afnan, Armaf, etc.
+
+Retorne EXATAMENTE um array JSON e NADA MAIS, neste formato:
+[
+  {
+    "name": "Nome do Contratipo",
+    "brand": "Marca (ex: Nuancielo)",
+    "similarity": "Porcentagem de similaridade (ex: 95%)",
+    "pros": "O que ele tem de bom? (ex: Fixa muito mais que o original)"
+  }
+]
+`;
+
+    const result = await model.generateContent(promptText);
+    const response = await result.response;
+    let text = response.text().trim();
+    
+    const jsonMatch = text.match(/\[[\s\S]*\]/);
+    if (jsonMatch) {
+      return JSON.parse(jsonMatch[0]);
+    }
+    
+    return [];
+  } catch (error) {
+    console.error("Gemini API Error (Clones):", error);
+    return [];
+  }
+};
+
 export const recommendNewPerfumes = async (inventoryList) => {
   if (!genAI || !import.meta.env.VITE_GEMINI_API_KEY || inventoryList.length === 0) {
     return [

@@ -7,7 +7,7 @@ import { fetchPerfumeDetails } from '../utils/aiRecommender';
 const PerfumeDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { inventory, updatePerfumeDetails, updateFillLevel, updateUserReview, recordSotd, sotdHistory } = useAppContext();
+  const { inventory, updatePerfumeDetails, updateFillLevel, updateUserReview, updatePricePaid, recordSotd, sotdHistory } = useAppContext();
   
   const [perfume, setPerfume] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -15,6 +15,7 @@ const PerfumeDetails = () => {
 
   const [localReview, setLocalReview] = useState('');
   const [localRating, setLocalRating] = useState(0);
+  const [localPricePaid, setLocalPricePaid] = useState('');
   const [isSavingReview, setIsSavingReview] = useState(false);
   const [justRecordedSotd, setJustRecordedSotd] = useState(false);
 
@@ -33,6 +34,7 @@ const PerfumeDetails = () => {
     setPerfume(foundPerfume);
     setLocalReview(foundPerfume.user_review || '');
     setLocalRating(foundPerfume.user_rating || 0);
+    setLocalPricePaid(foundPerfume.price_paid || '');
 
     const getDetails = async () => {
       // If we already fetched it before and it's the NEW schema (has accords)
@@ -64,6 +66,9 @@ const PerfumeDetails = () => {
   const handleSaveReview = async () => {
     setIsSavingReview(true);
     await updateUserReview(perfume.id, localRating, localReview);
+    if (localPricePaid !== '') {
+      await updatePricePaid(perfume.id, parseFloat(localPricePaid));
+    }
     setIsSavingReview(false);
   };
 
@@ -331,6 +336,25 @@ const PerfumeDetails = () => {
                 outline: 'none'
               }}
             />
+
+            <div style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Preço Pago (R$):</span>
+              <input 
+                type="number" 
+                value={localPricePaid}
+                onChange={(e) => setLocalPricePaid(e.target.value)}
+                placeholder="Ex: 350.00"
+                style={{
+                  flex: 1,
+                  padding: '0.8rem',
+                  background: 'rgba(0,0,0,0.2)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  color: 'white',
+                  borderRadius: '8px',
+                  outline: 'none'
+                }}
+              />
+            </div>
             
             <button 
               onClick={handleSaveReview} 
