@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Navigate } from 'react-router-dom';
-import { Info, Flame, Trees, CloudOff, ArrowLeft, Droplet, CheckCircle2, Sparkles, Loader2, Search } from 'lucide-react';
-import { recommendNewPerfumes, recommendLayering, findClones } from '../utils/aiRecommender';
+import { Info, Flame, Trees, CloudOff, ArrowLeft, Droplet, CheckCircle2, Sparkles, Loader2, Search, Swords } from 'lucide-react';
+import { recommendNewPerfumes, recommendLayering, findClones, perfumeBattle } from '../utils/aiRecommender';
 import { useAppContext } from '../context/AppProvider';
 
 const Analysis = () => {
@@ -19,6 +19,11 @@ const Analysis = () => {
   const [clones, setClones] = useState([]);
   const [isFindingClones, setIsFindingClones] = useState(false);
   const [cloneSearchText, setCloneSearchText] = useState('');
+
+  const [battlePerfume1, setBattlePerfume1] = useState('');
+  const [battlePerfume2, setBattlePerfume2] = useState('');
+  const [battleResult, setBattleResult] = useState(null);
+  const [isBattling, setIsBattling] = useState(false);
 
   if (!recommendation) {
     return <Navigate to="/" />;
@@ -76,6 +81,18 @@ const Analysis = () => {
     setIsFindingClones(false);
   };
 
+  const handleBattle = async () => {
+    if (!battlePerfume1 || !battlePerfume2) return;
+    const p1 = inventory.find(p => p.id === battlePerfume1);
+    const p2 = inventory.find(p => p.id === battlePerfume2);
+    if (!p1 || !p2) return;
+    
+    setIsBattling(true);
+    const result = await perfumeBattle(p1, p2);
+    setBattleResult(result);
+    setIsBattling(false);
+  };
+
   return (
     <div className="page-wrapper" style={{ paddingBottom: '3rem' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
@@ -115,6 +132,12 @@ const Analysis = () => {
           style={{ flex: 1, padding: '0.5rem', background: 'none', border: 'none', color: activeTab === 'clones' ? 'var(--accent)' : 'var(--text-muted)', fontWeight: activeTab === 'clones' ? 'bold' : 'normal', borderBottom: activeTab === 'clones' ? '2px solid var(--accent)' : 'none', display: 'flex', alignItems: 'center', gap: '0.25rem', justifyContent: 'center' }}
         >
           <Search size={16} /> Clones
+        </button>
+        <button 
+          onClick={() => setActiveTab('batalha')}
+          style={{ flex: 1, padding: '0.5rem', background: 'none', border: 'none', color: activeTab === 'batalha' ? '#ef4444' : 'var(--text-muted)', fontWeight: activeTab === 'batalha' ? 'bold' : 'normal', borderBottom: activeTab === 'batalha' ? '2px solid #ef4444' : 'none', display: 'flex', alignItems: 'center', gap: '0.25rem', justifyContent: 'center' }}
+        >
+          <Swords size={16} /> Batalha
         </button>
       </div>
 
@@ -312,6 +335,81 @@ const Analysis = () => {
                   </p>
                 </div>
               ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {activeTab === 'batalha' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
+            <Swords size={32} color="#ef4444" style={{ marginBottom: '0.5rem' }} />
+            <h3 style={{ margin: 0, fontSize: '1.2rem' }}>Batalha Olfativa</h3>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Escolha dois frascos e veja quem vence o duelo.</p>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+            <select 
+              value={battlePerfume1}
+              onChange={(e) => setBattlePerfume1(e.target.value)}
+              style={{ flex: 1, padding: '0.75rem', borderRadius: '8px', background: 'rgba(0,0,0,0.4)', color: 'white', border: '1px solid rgba(255,255,255,0.1)' }}
+            >
+              <option value="">Selecione o Desafiante 1</option>
+              {inventory.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+            </select>
+            <span style={{ fontWeight: 'bold', color: '#ef4444' }}>VS</span>
+            <select 
+              value={battlePerfume2}
+              onChange={(e) => setBattlePerfume2(e.target.value)}
+              style={{ flex: 1, padding: '0.75rem', borderRadius: '8px', background: 'rgba(0,0,0,0.4)', color: 'white', border: '1px solid rgba(255,255,255,0.1)' }}
+            >
+              <option value="">Selecione o Desafiante 2</option>
+              {inventory.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+            </select>
+          </div>
+
+          <button 
+            onClick={handleBattle}
+            disabled={isBattling || !battlePerfume1 || !battlePerfume2 || battlePerfume1 === battlePerfume2}
+            style={{ width: '100%', padding: '1rem', borderRadius: '8px', background: '#ef4444', color: 'white', border: 'none', fontWeight: 'bold', cursor: 'pointer' }}
+          >
+            {isBattling ? 'Julgando Batalha...' : 'Iniciar Combate'}
+          </button>
+
+          {isBattling && (
+            <div style={{ textAlign: 'center', padding: '2rem 0' }}>
+              <Loader2 size={32} className="lucide-spin" style={{ color: '#ef4444', margin: '0 auto', animation: 'spin 2s linear infinite' }} />
+              <p style={{ color: '#ef4444', marginTop: '1rem' }}>Analisando projeção e notas...</p>
+            </div>
+          )}
+
+          {!isBattling && battleResult && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem' }}>
+              <div className="glass-card" style={{ borderLeft: '4px solid #f97316' }}>
+                <h4 style={{ color: '#f97316', margin: '0 0 0.5rem 0' }}>🥊 Projeção e Fixação</h4>
+                <p style={{ margin: 0, fontSize: '0.9rem' }}><strong>Vencedor:</strong> {battleResult.projection_winner}</p>
+                <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>{battleResult.projection_reason}</p>
+              </div>
+
+              <div className="glass-card" style={{ borderLeft: '4px solid #ec4899' }}>
+                <h4 style={{ color: '#ec4899', margin: '0 0 0.5rem 0' }}>💖 Elogios e Encontros</h4>
+                <p style={{ margin: 0, fontSize: '0.9rem' }}><strong>Vencedor:</strong> {battleResult.compliments_winner}</p>
+                <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>{battleResult.compliments_reason}</p>
+              </div>
+
+              <div className="glass-card" style={{ borderLeft: '4px solid #3b82f6' }}>
+                <h4 style={{ color: '#3b82f6', margin: '0 0 0.5rem 0' }}>💼 Dia a Dia e Versatilidade</h4>
+                <p style={{ margin: 0, fontSize: '0.9rem' }}><strong>Vencedor:</strong> {battleResult.versatility_winner}</p>
+                <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>{battleResult.versatility_reason}</p>
+              </div>
+
+              <div className="glass-card" style={{ background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(185, 28, 28, 0.2))', border: '1px solid #ef4444', textAlign: 'center' }}>
+                <h3 style={{ color: '#ef4444', margin: '0 0 0.5rem 0', textTransform: 'uppercase' }}>🏆 Vencedor Geral</h3>
+                <h2 style={{ margin: '0 0 1rem 0', color: 'white' }}>{battleResult.overall_winner}</h2>
+                <p style={{ margin: 0, fontSize: '0.9rem', fontStyle: 'italic', color: '#fca5a5' }}>
+                  "{battleResult.overall_verdict}"
+                </p>
+              </div>
             </div>
           )}
         </div>

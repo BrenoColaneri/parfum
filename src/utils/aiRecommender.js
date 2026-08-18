@@ -306,6 +306,65 @@ Retorne EXATAMENTE um array JSON e NADA MAIS, neste formato:
   }
 };
 
+export const perfumeBattle = async (perfume1, perfume2) => {
+  if (!genAI || !import.meta.env.VITE_GEMINI_API_KEY) {
+    // Mock
+    return new Promise(resolve => {
+      setTimeout(() => {
+        resolve({
+          projection_winner: perfume1.name,
+          projection_reason: "Possui uma concentração maior e notas de fundo densas como couro.",
+          compliments_winner: perfume2.name,
+          compliments_reason: "É mais fresco e agradável para a maioria das pessoas.",
+          versatility_winner: perfume2.name,
+          versatility_reason: "Pode ser usado tanto no calor quanto no frio sem sufocar.",
+          overall_winner: perfume2.name,
+          overall_verdict: `Apesar de ${perfume1.name} ser uma bomba, ${perfume2.name} é mais versátil e agradará mais no dia a dia.`
+        });
+      }, 1500);
+    });
+  }
+
+  try {
+    const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash-lite" });
+
+    const promptText = `
+Você é um juiz experiente na comunidade de perfumaria.
+O usuário quer fazer uma "Batalha Olfativa" entre dois perfumes que ele possui na coleção:
+Perfume 1: ${perfume1.name} (${perfume1.brand || 'Desconhecido'})
+Perfume 2: ${perfume2.name} (${perfume2.brand || 'Desconhecido'})
+
+Avalie qual deles vence em cada uma das categorias abaixo. Retorne EXATAMENTE um objeto JSON e NADA MAIS.
+
+Formato esperado:
+{
+  "projection_winner": "Nome do vencedor (exato)",
+  "projection_reason": "Por que ele vence na projeção/fixação?",
+  "compliments_winner": "Nome do vencedor (exato)",
+  "compliments_reason": "Por que ele rende mais elogios/é mais agradável?",
+  "versatility_winner": "Nome do vencedor (exato)",
+  "versatility_reason": "Por que ele é melhor para o dia a dia/trabalho?",
+  "overall_winner": "Nome do vencedor geral (exato)",
+  "overall_verdict": "O veredito final em 2 frases."
+}
+`;
+
+    const result = await model.generateContent(promptText);
+    const response = await result.response;
+    let text = response.text().trim();
+    
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      return JSON.parse(jsonMatch[0]);
+    }
+    
+    return null;
+  } catch (error) {
+    console.error("Gemini API Error (Battle):", error);
+    return null;
+  }
+};
+
 export const recommendNewPerfumes = async (inventoryList) => {
   if (!genAI || !import.meta.env.VITE_GEMINI_API_KEY || inventoryList.length === 0) {
     return [

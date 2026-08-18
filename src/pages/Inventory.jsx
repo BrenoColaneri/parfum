@@ -11,6 +11,10 @@ const Inventory = () => {
   const [newPerfumeName, setNewPerfumeName] = useState('');
   const [newPerfumePrice, setNewPerfumePrice] = useState('');
   const [isSearchingAI, setIsSearchingAI] = useState(false);
+
+  const summerSpring = inventory.filter(p => p.type.includes('Fresco') || p.type.includes('Cítrico') || p.type.includes('Aquático') || p.type.includes('Verde'));
+  const fallWinter = inventory.filter(p => p.type.includes('Amadeirado') || p.type.includes('Oriental') || p.type.includes('Especiado') || p.type.includes('Couro') || p.type.includes('Quente'));
+  const signature = inventory.filter(p => !summerSpring.includes(p) && !fallWinter.includes(p));
   
   // Multimodal state
   const [imageBase64, setImageBase64] = useState(null);
@@ -77,6 +81,45 @@ const Inventory = () => {
       case 'Droplets': default: return <Droplets size={24} color="#38bdf8" />;
     }
   };
+
+  const renderPerfumeCard = (perfume) => (
+    <div 
+      className="inventory-card" 
+      key={perfume.id} 
+      onClick={() => navigate(`/perfume/${perfume.id}`)}
+      style={{ display: 'flex', alignItems: 'flex-start', padding: '1rem', cursor: 'pointer' }}
+    >
+      <div className="perfume-icon-wrapper" style={{ width: 48, height: 48, marginTop: '4px' }}>
+        {getIcon(perfume.icon)}
+      </div>
+      <div className="inventory-details" style={{ flex: 1, marginLeft: '1rem' }}>
+        {perfume.brand && <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--accent)', fontWeight: 'bold' }}>{perfume.brand}</span>}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: '0.25rem 0' }}>
+          <h4 style={{ margin: 0, fontSize: '1.1rem' }}>{perfume.name}</h4>
+          {perfume.concentration && (
+            <span style={{ fontSize: '0.65rem', padding: '0.2rem 0.4rem', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', color: '#e2e8f0', fontWeight: 'bold' }}>
+              {perfume.concentration}
+            </span>
+          )}
+        </div>
+        <span className="inventory-tags" style={{ display: 'inline-block', marginBottom: '0.5rem' }}>{perfume.type}</span>
+        {perfume.notes && (
+          <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: 0, fontStyle: 'italic' }}>
+            Notas: {perfume.notes}
+          </p>
+        )}
+      </div>
+      <button 
+        onClick={(e) => {
+          e.stopPropagation();
+          removePerfume(perfume.id);
+        }} 
+        style={{ background: 'none', border: 'none', color: '#ef4444', padding: '0.5rem', cursor: 'pointer' }}
+      >
+        <Trash2 size={20} />
+      </button>
+    </div>
+  );
 
   return (
     <div className="page-wrapper">
@@ -166,44 +209,42 @@ const Inventory = () => {
         {inventory.length === 0 ? (
           <p style={{ textAlign: 'center', color: 'var(--text-muted)', marginTop: '2rem' }}>Sua biblioteria está vazia.</p>
         ) : (
-          inventory.map(perfume => (
-            <div 
-              className="inventory-card" 
-              key={perfume.id} 
-              onClick={() => navigate(`/perfume/${perfume.id}`)}
-              style={{ display: 'flex', alignItems: 'flex-start', padding: '1rem', cursor: 'pointer' }}
-            >
-              <div className="perfume-icon-wrapper" style={{ width: 48, height: 48, marginTop: '4px' }}>
-                {getIcon(perfume.icon)}
-              </div>
-              <div className="inventory-details" style={{ flex: 1, marginLeft: '1rem' }}>
-                {perfume.brand && <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--accent)', fontWeight: 'bold' }}>{perfume.brand}</span>}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: '0.25rem 0' }}>
-                  <h4 style={{ margin: 0, fontSize: '1.1rem' }}>{perfume.name}</h4>
-                  {perfume.concentration && (
-                    <span style={{ fontSize: '0.65rem', padding: '0.2rem 0.4rem', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', color: '#e2e8f0', fontWeight: 'bold' }}>
-                      {perfume.concentration}
-                    </span>
-                  )}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+            
+            {summerSpring.length > 0 && (
+              <div>
+                <h3 style={{ fontSize: '1.1rem', color: '#38bdf8', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', borderBottom: '1px solid rgba(56, 189, 248, 0.3)', paddingBottom: '0.5rem' }}>
+                  ☀️ Verão & Primavera
+                </h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  {summerSpring.map(perfume => renderPerfumeCard(perfume))}
                 </div>
-                <span className="inventory-tags" style={{ display: 'inline-block', marginBottom: '0.5rem' }}>{perfume.type}</span>
-                {perfume.notes && (
-                  <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: 0, fontStyle: 'italic' }}>
-                    Notas: {perfume.notes}
-                  </p>
-                )}
               </div>
-              <button 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  removePerfume(perfume.id);
-                }} 
-                style={{ background: 'none', border: 'none', color: '#ef4444', padding: '0.5rem', cursor: 'pointer' }}
-              >
-                <Trash2 size={20} />
-              </button>
-            </div>
-          ))
+            )}
+
+            {fallWinter.length > 0 && (
+              <div>
+                <h3 style={{ fontSize: '1.1rem', color: '#f97316', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', borderBottom: '1px solid rgba(249, 115, 22, 0.3)', paddingBottom: '0.5rem' }}>
+                  ❄️ Outono & Inverno
+                </h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  {fallWinter.map(perfume => renderPerfumeCard(perfume))}
+                </div>
+              </div>
+            )}
+
+            {signature.length > 0 && (
+              <div>
+                <h3 style={{ fontSize: '1.1rem', color: '#a855f7', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', borderBottom: '1px solid rgba(168, 85, 247, 0.3)', paddingBottom: '0.5rem' }}>
+                  👔 Assinatura & Versáteis
+                </h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  {signature.map(perfume => renderPerfumeCard(perfume))}
+                </div>
+              </div>
+            )}
+
+          </div>
         )}
       </div>
 
