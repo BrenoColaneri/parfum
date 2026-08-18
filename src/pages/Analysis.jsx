@@ -118,7 +118,7 @@ const Analysis = () => {
         </button>
       </div>
 
-      {activeTab === 'uso' ? (
+      {activeTab === 'uso' && (
         <>
           <h3 className="subtitle" style={{ marginBottom: '1rem' }}>Contexto Atual</h3>
           <div className="analysis-summary">
@@ -183,7 +183,9 @@ const Analysis = () => {
             </div>
           </button>
         </>
-      ) : (
+      )}
+
+      {activeTab === 'descobrir' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', textAlign: 'center' }}>
             Baseado no que você já tem na sua Biblioteria, a IA encontrou essas jóias da perfumaria para você.
