@@ -18,6 +18,7 @@ const initialWishlist = [
 
 export const AppProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [inventory, setInventory] = useState(initialInventory);
   const [wishlist, setWishlist] = useState(initialWishlist);
@@ -78,6 +79,15 @@ export const AppProvider = ({ children }) => {
     }
 
     // Auth Listener
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        setIsAuthenticated(true);
+        setUser(session.user);
+        fetchData(session.user.id);
+      }
+      setIsAuthLoading(false);
+    });
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session) {
         setIsAuthenticated(true);
@@ -90,6 +100,7 @@ export const AppProvider = ({ children }) => {
         setWishlist([]);
         setSotdHistory([]);
       }
+      setIsAuthLoading(false);
     });
 
     return () => subscription.unsubscribe();
@@ -133,6 +144,10 @@ export const AppProvider = ({ children }) => {
       throw error;
     }
     return data;
+  };
+
+  const logout = async () => {
+    await supabase.auth.signOut();
   };
 
   const signup = async (email, password, name) => {
@@ -262,7 +277,7 @@ export const AppProvider = ({ children }) => {
 
   return (
     <AppContext.Provider value={{ 
-      isAuthenticated, user, login, signup, 
+      isAuthenticated, isAuthLoading, user, login, signup, logout, 
       inventory, addPerfume, removePerfume, updatePerfumeDetails, updateFillLevel, updateUserReview,
       wishlist, addToWishlist, removeFromWishlist, 
       sotdHistory, recordSotd,
