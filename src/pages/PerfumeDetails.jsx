@@ -1,17 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Loader2, Info, User, CalendarDays, Star, Layers, Activity, Users, DollarSign, Plus, CheckCircle, Droplets, Trees, Flame, Wind, FlaskConical, Leaf } from 'lucide-react';
+import { ArrowLeft, Loader2, Info, User, CalendarDays, Star, Layers, Activity, Users, DollarSign, Plus, CheckCircle, Droplets, Trees, Flame, Wind, FlaskConical, Leaf, Edit2, Save, X } from 'lucide-react';
 import { useAppContext } from '../context/AppProvider';
 import { fetchPerfumeDetails } from '../utils/aiRecommender';
 
 const PerfumeDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { inventory, updatePerfumeDetails, updateFillLevel, updateUserReview, updatePricePaid, recordSotd, sotdHistory } = useAppContext();
+  const { inventory, updatePerfumeDetails, updateFillLevel, updateUserReview, updatePricePaid, recordSotd, sotdHistory, editPerfumeBaseInfo } = useAppContext();
   
   const [perfume, setPerfume] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState({ name: '', brand: '', concentration: '', type: '', price_paid: '' });
 
   const [localReview, setLocalReview] = useState('');
   const [localRating, setLocalRating] = useState(0);
@@ -35,6 +38,13 @@ const PerfumeDetails = () => {
     setLocalReview(foundPerfume.user_review || '');
     setLocalRating(foundPerfume.user_rating || 0);
     setLocalPricePaid(foundPerfume.price_paid || '');
+    setEditForm({
+      name: foundPerfume.name || '',
+      brand: foundPerfume.brand || '',
+      concentration: foundPerfume.concentration || '',
+      type: foundPerfume.type || '',
+      price_paid: foundPerfume.price_paid || ''
+    });
 
     const getDetails = async () => {
       // If we already fetched it before and it's the NEW schema (has accords)
@@ -69,6 +79,22 @@ const PerfumeDetails = () => {
     if (localPricePaid !== '') {
       await updatePricePaid(perfume.id, parseFloat(localPricePaid));
     }
+    setIsSavingReview(false);
+  };
+
+  const handleSaveEdit = async () => {
+    setIsSavingReview(true);
+    const updated = {
+      name: editForm.name,
+      brand: editForm.brand,
+      concentration: editForm.concentration,
+      type: editForm.type,
+      price_paid: parseFloat(editForm.price_paid) || 0
+    };
+    await editPerfumeBaseInfo(perfume.id, updated);
+    setPerfume(prev => ({...prev, ...updated}));
+    setLocalPricePaid(updated.price_paid);
+    setIsEditing(false);
     setIsSavingReview(false);
   };
 
@@ -112,10 +138,24 @@ const PerfumeDetails = () => {
 
   return (
     <div className="page-wrapper" style={{ paddingBottom: '5rem' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
         <button onClick={() => navigate('/inventory')} style={{ background: 'none', border: 'none', color: 'var(--text-main)', padding: '0.5rem', cursor: 'pointer' }}>
           <ArrowLeft size={24} />
         </button>
+        {!isEditing ? (
+          <button onClick={() => setIsEditing(true)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Edit2 size={18} /> Editar
+          </button>
+        ) : (
+          <div style={{ display: 'flex', gap: '1rem' }}>
+            <button onClick={() => setIsEditing(false)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }}>
+              <X size={20} />
+            </button>
+            <button onClick={handleSaveEdit} disabled={isSavingReview} style={{ background: 'none', border: 'none', color: '#4ade80', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              {isSavingReview ? <Loader2 size={20} className="lucide-spin" /> : <><Save size={20} /> Salvar</>}
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="perfume-details-header" style={{ textAlign: 'center' }}>
@@ -128,8 +168,22 @@ const PerfumeDetails = () => {
             </div>
           )}
         </div>
-        <h2 style={{ fontSize: '1.8rem', margin: '0 0 0.5rem 0', textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>{perfume.name}</h2>
-        <p style={{ fontSize: '1.2rem', color: 'var(--accent)', margin: 0, fontWeight: 'bold', letterSpacing: '1px' }}>{perfume.brand}</p>
+        {!isEditing ? (
+          <>
+            <h2 style={{ fontSize: '1.8rem', margin: '0 0 0.5rem 0', textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>{perfume.name}</h2>
+            <p style={{ fontSize: '1.2rem', color: 'var(--accent)', margin: 0, fontWeight: 'bold', letterSpacing: '1px' }}>{perfume.brand}</p>
+          </>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'center', marginBottom: '1rem' }}>
+            <input type="text" value={editForm.name} onChange={e => setEditForm({...editForm, name: e.target.value})} placeholder="Nome" style={{ width: '80%', padding: '0.5rem', borderRadius: '8px', border: '1px solid var(--accent)', background: 'var(--glass-bg)', color: 'white', textAlign: 'center', fontSize: '1.2rem' }} />
+            <input type="text" value={editForm.brand} onChange={e => setEditForm({...editForm, brand: e.target.value})} placeholder="Marca" style={{ width: '80%', padding: '0.5rem', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--glass-bg)', color: 'var(--accent)', textAlign: 'center' }} />
+            <div style={{ display: 'flex', gap: '0.5rem', width: '80%' }}>
+              <input type="text" value={editForm.concentration} onChange={e => setEditForm({...editForm, concentration: e.target.value})} placeholder="Ex: EDP" style={{ flex: 1, padding: '0.5rem', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--glass-bg)', color: 'white', textAlign: 'center' }} />
+              <input type="text" value={editForm.type} onChange={e => setEditForm({...editForm, type: e.target.value})} placeholder="Ex: Amadeirado" style={{ flex: 2, padding: '0.5rem', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--glass-bg)', color: 'white', textAlign: 'center' }} />
+            </div>
+            <input type="number" value={editForm.price_paid} onChange={e => setEditForm({...editForm, price_paid: e.target.value})} placeholder="Preço Pago (R$)" style={{ width: '80%', padding: '0.5rem', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--glass-bg)', color: 'white', textAlign: 'center' }} />
+          </div>
+        )}
       </div>
 
       <div className="glass-card" style={{ marginBottom: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>

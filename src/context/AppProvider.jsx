@@ -210,6 +210,15 @@ export const AppProvider = ({ children }) => {
     }
   };
 
+  const editPerfumeBaseInfo = async (id, updatedData) => {
+    const { data, error } = await supabase.from('inventory').update(updatedData).match({ id }).select();
+    if (!error && data) {
+      setInventory(inventory.map(p => p.id === id ? { ...p, ...updatedData } : p));
+    } else if (error) {
+      console.error('Error updating perfume base info in Supabase:', error);
+    }
+  };
+
   const addToWishlist = async (item) => {
     if (!user) return;
     const newItem = { 
@@ -278,7 +287,7 @@ export const AppProvider = ({ children }) => {
   return (
     <AppContext.Provider value={{ 
       isAuthenticated, isAuthLoading, user, login, signup, logout, 
-      inventory, addPerfume, removePerfume, updatePerfumeDetails, updateFillLevel, updateUserReview,
+      inventory, addPerfume, removePerfume, updatePerfumeDetails, updateFillLevel, updateUserReview, editPerfumeBaseInfo,
       wishlist, addToWishlist, removeFromWishlist, 
       sotdHistory, recordSotd,
       weather 

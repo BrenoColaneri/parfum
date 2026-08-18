@@ -11,6 +11,10 @@ const Inventory = () => {
   const [newPerfumeName, setNewPerfumeName] = useState('');
   const [newPerfumePrice, setNewPerfumePrice] = useState('');
   const [isSearchingAI, setIsSearchingAI] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedFilter, setSelectedFilter] = useState('Todos');
+
+  const filterCategories = ['Todos', 'Amadeirado', 'Fresco', 'Cítrico', 'Doce', 'Especiado', 'Floral', 'Couro', 'Aquático'];
 
   // Multimodal state
   const [imageBase64, setImageBase64] = useState(null);
@@ -119,9 +123,39 @@ const Inventory = () => {
 
   return (
     <div className="page-wrapper">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
         <h2 className="page-title">Biblioteria</h2>
-        <Search size={24} color="var(--text-muted)" />
+      </div>
+
+      <div style={{ position: 'relative', marginBottom: '1rem' }}>
+        <input 
+          type="text" 
+          placeholder="Buscar na coleção..." 
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          style={{ width: '100%', padding: '1rem 1rem 1rem 3rem', borderRadius: '12px', border: '1px solid var(--glass-border)', background: 'var(--glass-bg)', color: 'white' }}
+        />
+        <Search size={20} color="var(--text-muted)" style={{ position: 'absolute', left: '1rem', top: '1rem' }} />
+      </div>
+
+      <div style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', paddingBottom: '0.5rem', marginBottom: '1.5rem', scrollbarWidth: 'none' }}>
+        {filterCategories.map(cat => (
+          <button 
+            key={cat}
+            onClick={() => setSelectedFilter(cat)}
+            style={{ 
+              padding: '0.4rem 1rem', 
+              borderRadius: '20px', 
+              whiteSpace: 'nowrap',
+              border: selectedFilter === cat ? 'none' : '1px solid var(--glass-border)', 
+              background: selectedFilter === cat ? 'var(--accent)' : 'var(--glass-bg)', 
+              color: 'white',
+              fontWeight: selectedFilter === cat ? 'bold' : 'normal'
+            }}
+          >
+            {cat}
+          </button>
+        ))}
       </div>
 
       {showAddForm && (
@@ -206,7 +240,14 @@ const Inventory = () => {
           <p style={{ textAlign: 'center', color: 'var(--text-muted)', marginTop: '2rem' }}>Sua biblioteria está vazia.</p>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {[...inventory].sort((a, b) => a.name.localeCompare(b.name)).map(perfume => renderPerfumeCard(perfume))}
+            {[...inventory]
+              .filter(p => {
+                const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) || (p.brand && p.brand.toLowerCase().includes(searchTerm.toLowerCase()));
+                if (selectedFilter === 'Todos') return matchesSearch;
+                return matchesSearch && p.type && p.type.toLowerCase().includes(selectedFilter.toLowerCase());
+              })
+              .sort((a, b) => a.name.localeCompare(b.name))
+              .map(perfume => renderPerfumeCard(perfume))}
           </div>
         )}
       </div>
