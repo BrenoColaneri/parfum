@@ -16,7 +16,8 @@ const Wishlist = () => {
       try {
         const enrichedData = await enrichPerfumeData({ perfumeName: newItem.name });
         
-        const autoLink = `https://www.sephora.com.br/busca?q=${encodeURIComponent(enrichedData.name + " " + (enrichedData.brand || "") + " " + newItem.volume)}`;
+        const query = `${enrichedData.name} ${enrichedData.brand || ""} ${newItem.volume}`.trim();
+        const autoLink = `https://www.google.com/search?q=${encodeURIComponent('site:pequiperfumes.com.br OR site:chiceperfumados.com.br OR site:thekingofparfums.com.br ' + query)}`;
 
         await addToWishlist({
           name: enrichedData.name,
@@ -25,7 +26,7 @@ const Wishlist = () => {
           type: enrichedData.type,
           icon: enrichedData.icon,
           volume: newItem.volume,
-          link: newItem.link || autoLink // Usa o link manual ou gera um link de busca direto na Sephora
+          link: newItem.link || autoLink // Usa o link manual ou gera um link de busca focada nas lojas confiáveis
         });
         
         setShowAddForm(false);
