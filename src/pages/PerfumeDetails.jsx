@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Loader2, Info, User, CalendarDays, Star, Layers, Activity, Users, DollarSign, Plus } from 'lucide-react';
+import { ArrowLeft, Loader2, Info, User, CalendarDays, Star, Layers, Activity, Users, DollarSign, Plus, CheckCircle, Droplets, Trees, Flame, Wind, FlaskConical } from 'lucide-react';
 import { useAppContext } from '../context/AppProvider';
 import { fetchPerfumeDetails } from '../utils/aiRecommender';
 
@@ -95,6 +95,14 @@ const PerfumeDetails = () => {
     </div>
   );
 
+  const renderIcon = (type) => {
+    if (!type) return <FlaskConical size={64} color="var(--accent)" />;
+    if (type.includes('Fresco') || type.includes('Cítrico') || type.includes('Aquático')) return <Droplets size={64} color="#38bdf8" />;
+    if (type.includes('Amadeirado')) return <Trees size={64} color="#4ade80" />;
+    if (type.includes('Oriental') || type.includes('Especiado') || type.includes('Quente')) return <Flame size={64} color="#f97316" />;
+    return <Wind size={64} color="#cbd5e1" />;
+  };
+
   return (
     <div className="page-wrapper" style={{ paddingBottom: '5rem' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
@@ -103,12 +111,14 @@ const PerfumeDetails = () => {
         </button>
       </div>
 
-      <div className="perfume-details-header">
-        <div className="perfume-bottle" style={{ fontSize: '4rem', marginBottom: '1rem', display: 'flex', justifyContent: 'center' }}>
+      <div className="perfume-details-header" style={{ textAlign: 'center' }}>
+        <div className="perfume-bottle" style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
           {perfume.image ? (
             <img src={perfume.image} alt={perfume.name} style={{ width: '120px', height: '120px', objectFit: 'cover', borderRadius: '12px', border: '2px solid rgba(255,255,255,0.1)' }} />
           ) : (
-            "✨"
+            <div style={{ width: '120px', height: '120px', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.1)' }}>
+              {renderIcon(perfume.type)}
+            </div>
           )}
         </div>
         <h2 style={{ fontSize: '1.8rem', margin: '0 0 0.5rem 0', textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>{perfume.name}</h2>
@@ -119,17 +129,18 @@ const PerfumeDetails = () => {
         <button 
           onClick={isSotdToday ? null : handleRecordSotd}
           disabled={isSotdToday}
-          className="btn-primary"
+          className="glass-card"
           style={{ 
             width: '100%', 
             padding: '1rem',
-            background: isSotdToday ? 'rgba(34, 197, 94, 0.2)' : 'var(--accent)',
-            color: isSotdToday ? '#4ade80' : 'white',
-            border: isSotdToday ? '1px solid #4ade80' : 'none',
+            background: isSotdToday ? 'rgba(34, 197, 94, 0.1)' : 'rgba(167, 139, 250, 0.1)',
+            color: isSotdToday ? '#4ade80' : 'var(--accent)',
+            border: `1px solid ${isSotdToday ? 'rgba(34, 197, 94, 0.3)' : 'rgba(167, 139, 250, 0.3)'}`,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: '0.5rem'
+            gap: '0.5rem',
+            cursor: isSotdToday ? 'default' : 'pointer'
           }}
         >
           {isSotdToday ? <CheckCircle size={20} /> : <CalendarDays size={20} />}
@@ -275,8 +286,8 @@ const PerfumeDetails = () => {
               <div style={{ display: 'flex', overflowX: 'auto', gap: '1rem', paddingBottom: '1rem' }}>
                 {perfume.full_details.similar.map((sim, idx) => (
                   <div key={idx} className="glass-card" style={{ minWidth: '140px', padding: '1rem', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                    <div style={{ width: '50px', height: '50px', background: 'rgba(255,255,255,0.1)', borderRadius: '8px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Layers size={24} color="var(--text-muted)" />
+                    <div style={{ width: '50px', height: '50px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.1)' }}>
+                      <FlaskConical size={24} color="var(--accent)" />
                     </div>
                     <div style={{ fontSize: '0.85rem', fontWeight: 'bold' }}>{sim}</div>
                   </div>
@@ -304,15 +315,37 @@ const PerfumeDetails = () => {
               value={localReview}
               onChange={(e) => setLocalReview(e.target.value)}
               placeholder="O que você acha dessa fragrância? Quando costuma usar?"
-              className="form-input"
-              style={{ width: '100%', minHeight: '100px', resize: 'vertical', marginBottom: '1rem', fontSize: '0.9rem' }}
+              style={{ 
+                width: '100%', 
+                minHeight: '100px', 
+                resize: 'vertical', 
+                marginBottom: '1rem', 
+                fontSize: '0.9rem',
+                background: 'rgba(0,0,0,0.2)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                color: 'white',
+                padding: '1rem',
+                borderRadius: '8px',
+                outline: 'none'
+              }}
             />
             
             <button 
               onClick={handleSaveReview} 
               disabled={isSavingReview}
-              className="btn-primary" 
-              style={{ width: '100%' }}
+              className="glass-card" 
+              style={{ 
+                width: '100%', 
+                padding: '1rem', 
+                background: 'rgba(167, 139, 250, 0.1)', 
+                color: 'var(--accent)', 
+                border: '1px solid rgba(167, 139, 250, 0.3)',
+                cursor: 'pointer',
+                fontWeight: 'bold',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center'
+              }}
             >
               {isSavingReview ? 'Salvando...' : 'Salvar Avaliação'}
             </button>
