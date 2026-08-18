@@ -6,7 +6,7 @@ import { enrichPerfumeData } from '../utils/aiRecommender';
 const Wishlist = () => {
   const { wishlist, addToWishlist, removeFromWishlist } = useAppContext();
   const [showAddForm, setShowAddForm] = useState(false);
-  const [newItem, setNewItem] = useState({ name: '', targetPrice: '', volume: '100ml' });
+  const [newItem, setNewItem] = useState({ name: '', targetPrice: '', volume: '100ml', link: '' });
 
   const [isSearchingAI, setIsSearchingAI] = useState(false);
 
@@ -23,11 +23,11 @@ const Wishlist = () => {
           type: enrichedData.type,
           icon: enrichedData.icon,
           volume: newItem.volume,
-          link: enrichedData.shoppingLink
+          link: newItem.link || enrichedData.shoppingLink // Usa o link manual ou faz fallback pro Google
         });
         
         setShowAddForm(false);
-        setNewItem({ name: '', targetPrice: '', volume: '100ml' });
+        setNewItem({ name: '', targetPrice: '', volume: '100ml', link: '' });
       } catch (error) {
         alert('Erro ao buscar perfume. Tente novamente.');
       } finally {
@@ -77,6 +77,14 @@ const Wishlist = () => {
             placeholder="Preço Meta (R$)" 
             value={newItem.targetPrice}
             onChange={(e) => setNewItem({...newItem, targetPrice: e.target.value})}
+            disabled={isSearchingAI}
+            style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.2)', color: 'white', marginBottom: '1rem' }}
+          />
+          <input 
+            type="text" 
+            placeholder="Link da Loja (Opcional)" 
+            value={newItem.link}
+            onChange={(e) => setNewItem({...newItem, link: e.target.value})}
             disabled={isSearchingAI}
             style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.2)', color: 'white', marginBottom: '1rem' }}
           />
