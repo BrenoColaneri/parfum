@@ -7,7 +7,7 @@ import { useAppContext } from '../context/AppProvider';
 const Analysis = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { inventory } = useAppContext();
+  const { inventory, recordSotd } = useAppContext();
   
   const recommendation = location.state?.recommendation;
   const [activeTab, setActiveTab] = useState('uso');
@@ -43,6 +43,12 @@ const Analysis = () => {
       getDiscoveries();
     }
   }, [activeTab, inventory, discoveries.length]);
+
+  const handleConfirmUse = async () => {
+    const todayStr = new Date().toISOString().split('T')[0];
+    await recordSotd(perfume.id, todayStr);
+    navigate('/history');
+  };
 
   return (
     <div className="page-wrapper" style={{ paddingBottom: '3rem' }}>
@@ -132,7 +138,7 @@ const Analysis = () => {
             </div>
           </div>
           
-          <button className="action-btn" onClick={() => navigate('/')} style={{ position: 'relative', bottom: 0, left: 0, right: 0, width: '100%' }}>
+          <button className="action-btn" onClick={handleConfirmUse} style={{ position: 'relative', bottom: 0, left: 0, right: 0, width: '100%' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
               <CheckCircle2 size={20} />
               Confirmar Uso
