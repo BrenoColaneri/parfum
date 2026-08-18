@@ -1,11 +1,11 @@
 import React, { useState, useMemo } from 'react';
-import { CalendarDays, ArrowLeft, BarChart3, Trophy, PieChart as PieChartIcon, Wallet } from 'lucide-react';
+import { CalendarDays, ArrowLeft, BarChart3, Trophy, PieChart as PieChartIcon, Wallet, Trash2 } from 'lucide-react';
 import { useAppContext } from '../context/AppProvider';
 import { useNavigate } from 'react-router-dom';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 
 const History = () => {
-  const { sotdHistory, inventory } = useAppContext();
+  const { sotdHistory, inventory, removeSotd } = useAppContext();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('historico');
 
@@ -16,7 +16,7 @@ const History = () => {
     }
     const perfume = inventory.find(p => p.id === curr.perfume_id);
     if (perfume) {
-      acc[curr.date].push(perfume);
+      acc[curr.date].push({ perfume, sotd_id: curr.id });
     }
     return acc;
   }, {}), [sotdHistory, inventory]);
@@ -121,13 +121,16 @@ const History = () => {
                     {formatDate(date)}
                   </h4>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    {groupedHistory[date].map((perfume, idx) => (
-                      <div key={idx} className="glass-card" onClick={() => navigate(`/perfume/${perfume.id}`)} style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', padding: '1rem' }}>
-                        <div style={{ flex: 1 }}>
-                          {perfume.brand && <span style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--accent)', fontWeight: 'bold' }}>{perfume.brand}</span>}
-                          <h4 style={{ fontSize: '1.1rem', margin: 0 }}>{perfume.name}</h4>
-                          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{perfume.type}</span>
+                    {groupedHistory[date].map((item, idx) => (
+                      <div key={idx} className="glass-card" style={{ display: 'flex', alignItems: 'center', padding: '1rem' }}>
+                        <div style={{ flex: 1, cursor: 'pointer' }} onClick={() => navigate(`/perfume/${item.perfume.id}`)}>
+                          {item.perfume.brand && <span style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--accent)', fontWeight: 'bold' }}>{item.perfume.brand}</span>}
+                          <h4 style={{ fontSize: '1.1rem', margin: 0 }}>{item.perfume.name}</h4>
+                          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{item.perfume.type}</span>
                         </div>
+                        <button onClick={() => removeSotd(item.sotd_id)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '0.5rem' }}>
+                          <Trash2 size={20} />
+                        </button>
                       </div>
                     ))}
                   </div>

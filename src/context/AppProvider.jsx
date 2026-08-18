@@ -270,6 +270,13 @@ export const AppProvider = ({ children }) => {
     }
   };
 
+  const removeSotd = async (id) => {
+    const { error } = await supabase.from('sotd_history').delete().match({ id });
+    if (!error) {
+      setSotdHistory(sotdHistory.filter(s => s.id !== id));
+    }
+  };
+
   const updateFillLevel = async (id, level) => {
     const { data, error } = await supabase.from('inventory').update({ fill_level: level }).match({ id }).select();
     if (!error && data) {
@@ -289,7 +296,7 @@ export const AppProvider = ({ children }) => {
       isAuthenticated, isAuthLoading, user, login, signup, logout, 
       inventory, addPerfume, removePerfume, updatePerfumeDetails, updateFillLevel, updateUserReview, editPerfumeBaseInfo,
       wishlist, addToWishlist, removeFromWishlist, 
-      sotdHistory, recordSotd,
+      sotdHistory, recordSotd, removeSotd,
       weather 
     }}>
       {children}

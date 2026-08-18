@@ -19,11 +19,19 @@ const Analysis = () => {
   const [clones, setClones] = useState([]);
   const [isFindingClones, setIsFindingClones] = useState(false);
   const [cloneSearchText, setCloneSearchText] = useState('');
+  const [cloneHistory, setCloneHistory] = useState(() => {
+    const saved = localStorage.getItem('cloneHistory');
+    return saved ? JSON.parse(saved) : [];
+  });
 
   const [battlePerfume1, setBattlePerfume1] = useState('');
   const [battlePerfume2, setBattlePerfume2] = useState('');
   const [battleResult, setBattleResult] = useState(null);
   const [isBattling, setIsBattling] = useState(false);
+  const [battleHistory, setBattleHistory] = useState(() => {
+    const saved = localStorage.getItem('battleHistory');
+    return saved ? JSON.parse(saved) : [];
+  });
 
   if (!recommendation) {
     return <Navigate to="/" />;
@@ -78,6 +86,9 @@ const Analysis = () => {
     setIsFindingClones(true);
     const results = await findClones(cloneSearchText);
     setClones(results);
+    const newHistory = [{ searchText: cloneSearchText, clones: results }, ...cloneHistory.filter(h => h.searchText !== cloneSearchText)].slice(0, 5);
+    setCloneHistory(newHistory);
+    localStorage.setItem('cloneHistory', JSON.stringify(newHistory));
     setIsFindingClones(false);
   };
 
@@ -90,6 +101,9 @@ const Analysis = () => {
     setIsBattling(true);
     const result = await perfumeBattle(p1, p2);
     setBattleResult(result);
+    const newHistory = [{ p1: p1.name, p2: p2.name, result }, ...battleHistory].slice(0, 5);
+    setBattleHistory(newHistory);
+    localStorage.setItem('battleHistory', JSON.stringify(newHistory));
     setIsBattling(false);
   };
 
@@ -337,6 +351,27 @@ const Analysis = () => {
               ))}
             </div>
           )}
+
+          {cloneHistory.length > 0 && !isFindingClones && clones.length === 0 && (
+            <div style={{ marginTop: '2rem' }}>
+              <h4 style={{ color: 'var(--accent)', marginBottom: '1rem', fontSize: '1rem' }}>Pesquisas Recentes</h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {cloneHistory.map((item, idx) => (
+                  <button 
+                    key={idx} 
+                    onClick={() => {
+                      setCloneSearchText(item.searchText);
+                      setClones(item.clones);
+                    }}
+                    style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '0.75rem', borderRadius: '8px', color: 'white', textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                  >
+                    <Search size={14} style={{ marginRight: '0.5rem', color: 'var(--text-muted)' }} />
+                    Clones de: {item.searchText}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -380,6 +415,24 @@ const Analysis = () => {
             <div style={{ textAlign: 'center', padding: '2rem 0' }}>
               <Loader2 size={32} className="lucide-spin" style={{ color: '#ef4444', margin: '0 auto', animation: 'spin 2s linear infinite' }} />
               <p style={{ color: '#ef4444', marginTop: '1rem' }}>Analisando projeção e notas...</p>
+            </div>
+          )}
+
+          {battleHistory.length > 0 && !isBattling && !battleResult && (
+            <div style={{ marginTop: '2rem' }}>
+              <h4 style={{ color: '#ef4444', marginBottom: '1rem', fontSize: '1rem' }}>Batalhas Recentes</h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {battleHistory.map((item, idx) => (
+                  <button 
+                    key={idx} 
+                    onClick={() => setBattleResult(item.result)}
+                    style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '0.75rem', borderRadius: '8px', color: 'white', textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                  >
+                    <Swords size={14} style={{ marginRight: '0.5rem', color: '#ef4444' }} />
+                    {item.p1} vs {item.p2}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
 

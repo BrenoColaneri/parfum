@@ -7,7 +7,7 @@ import { fetchPerfumeDetails } from '../utils/aiRecommender';
 const PerfumeDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { inventory, updatePerfumeDetails, updateFillLevel, updateUserReview, updatePricePaid, recordSotd, sotdHistory, editPerfumeBaseInfo } = useAppContext();
+  const { inventory, updatePerfumeDetails, updateFillLevel, updateUserReview, updatePricePaid, recordSotd, removeSotd, sotdHistory, editPerfumeBaseInfo } = useAppContext();
   
   const [perfume, setPerfume] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -69,8 +69,16 @@ const PerfumeDetails = () => {
   }, [id, inventory, updatePerfumeDetails]);
 
   const handleRecordSotd = async () => {
-    await recordSotd(perfume.id, todayStr);
-    setJustRecordedSotd(true);
+    if (isSotdToday) {
+      const record = sotdHistory.find(s => s.perfume_id === id && s.date === todayStr);
+      if (record) {
+        await removeSotd(record.id);
+      }
+      setJustRecordedSotd(false);
+    } else {
+      await recordSotd(perfume.id, todayStr);
+      setJustRecordedSotd(true);
+    }
   };
 
   const handleSaveReview = async () => {
@@ -188,24 +196,23 @@ const PerfumeDetails = () => {
 
       <div className="glass-card" style={{ marginBottom: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
         <button 
-          onClick={isSotdToday ? null : handleRecordSotd}
-          disabled={isSotdToday}
+          onClick={handleRecordSotd}
           className="glass-card"
           style={{ 
             width: '100%', 
             padding: '1rem',
-            background: isSotdToday ? 'rgba(34, 197, 94, 0.1)' : 'rgba(167, 139, 250, 0.1)',
-            color: isSotdToday ? '#4ade80' : 'var(--accent)',
-            border: `1px solid ${isSotdToday ? 'rgba(34, 197, 94, 0.3)' : 'rgba(167, 139, 250, 0.3)'}`,
+            background: isSotdToday ? 'rgba(239, 68, 68, 0.1)' : 'rgba(167, 139, 250, 0.1)',
+            color: isSotdToday ? '#ef4444' : 'var(--accent)',
+            border: `1px solid ${isSotdToday ? 'rgba(239, 68, 68, 0.3)' : 'rgba(167, 139, 250, 0.3)'}`,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             gap: '0.5rem',
-            cursor: isSotdToday ? 'default' : 'pointer'
+            cursor: 'pointer'
           }}
         >
-          {isSotdToday ? <CheckCircle size={20} /> : <CalendarDays size={20} />}
-          {isSotdToday ? 'Registrado no Histórico Hoje' : 'Estou usando hoje'}
+          {isSotdToday ? <X size={20} /> : <CalendarDays size={20} />}
+          {isSotdToday ? 'Desfazer Uso de Hoje' : 'Estou usando hoje'}
         </button>
       </div>
 
