@@ -16,6 +16,8 @@ const Wishlist = () => {
       try {
         const enrichedData = await enrichPerfumeData({ perfumeName: newItem.name });
         
+        const autoLink = `https://www.sephora.com.br/busca?q=${encodeURIComponent(enrichedData.name + " " + (enrichedData.brand || "") + " " + newItem.volume)}`;
+
         await addToWishlist({
           name: enrichedData.name,
           targetPrice: parseFloat(newItem.targetPrice),
@@ -23,7 +25,7 @@ const Wishlist = () => {
           type: enrichedData.type,
           icon: enrichedData.icon,
           volume: newItem.volume,
-          link: newItem.link || enrichedData.shoppingLink // Usa o link manual ou faz fallback pro Google
+          link: newItem.link || autoLink // Usa o link manual ou gera um link de busca direto na Sephora
         });
         
         setShowAddForm(false);
