@@ -14,7 +14,7 @@ const PerfumeDetails = () => {
   const [error, setError] = useState(null);
 
   const [isEditing, setIsEditing] = useState(false);
-  const [editForm, setEditForm] = useState({ name: '', brand: '', concentration: '', type: '', price_paid: '' });
+  const [editForm, setEditForm] = useState({ name: '', brand: '', concentration: '', type: '', price_paid: '', volume_ml: '' });
 
   const [localReview, setLocalReview] = useState('');
   const [localRating, setLocalRating] = useState(0);
@@ -43,7 +43,8 @@ const PerfumeDetails = () => {
       brand: foundPerfume.brand || '',
       concentration: foundPerfume.concentration || '',
       type: foundPerfume.type || '',
-      price_paid: foundPerfume.price_paid || ''
+      price_paid: foundPerfume.price_paid || '',
+      volume_ml: foundPerfume.full_details?.volume_ml || ''
     });
 
     const getDetails = async () => {
@@ -100,10 +101,29 @@ const PerfumeDetails = () => {
       price_paid: parseFloat(editForm.price_paid) || 0
     };
     await editPerfumeBaseInfo(perfume.id, updated);
-    setPerfume(prev => ({...prev, ...updated}));
+    
+    let newDetails = perfume.full_details;
+    if (editForm.volume_ml) {
+      const vol = parseFloat(editForm.volume_ml);
+      newDetails = { ...perfume.full_details, volume_ml: vol };
+      if (typeof newDetails.sprays_used === 'undefined') newDetails.sprays_used = 0;
+      await updatePerfumeDetails(perfume.id, newDetails);
+    }
+    
+    setPerfume(prev => ({...prev, ...updated, full_details: newDetails}));
     setLocalPricePaid(updated.price_paid);
     setIsEditing(false);
     setIsSavingReview(false);
+  };
+
+  const handleAddSprays = async (sprays) => {
+    if (!perfume.full_details?.volume_ml) return;
+    const currentSprays = perfume.full_details.sprays_used || 0;
+    const newSprays = currentSprays + sprays;
+    const newDetails = { ...perfume.full_details, sprays_used: newSprays };
+    
+    await updatePerfumeDetails(perfume.id, newDetails);
+    setPerfume(prev => ({...prev, full_details: newDetails}));
   };
 
   const handleFillLevelChange = async (e) => {
@@ -189,7 +209,10 @@ const PerfumeDetails = () => {
               <input type="text" value={editForm.concentration} onChange={e => setEditForm({...editForm, concentration: e.target.value})} placeholder="Ex: EDP" style={{ flex: 1, padding: '0.5rem', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--glass-bg)', color: 'white', textAlign: 'center' }} />
               <input type="text" value={editForm.type} onChange={e => setEditForm({...editForm, type: e.target.value})} placeholder="Ex: Amadeirado" style={{ flex: 2, padding: '0.5rem', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--glass-bg)', color: 'white', textAlign: 'center' }} />
             </div>
-            <input type="number" value={editForm.price_paid} onChange={e => setEditForm({...editForm, price_paid: e.target.value})} placeholder="Preço Pago (R$)" style={{ width: '80%', padding: '0.5rem', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--glass-bg)', color: 'white', textAlign: 'center' }} />
+            <div style={{ display: 'flex', gap: '0.5rem', width: '80%' }}>
+              <input type="number" value={editForm.price_paid} onChange={e => setEditForm({...editForm, price_paid: e.target.value})} placeholder="Preço Pago (R$)" style={{ flex: 1, padding: '0.5rem', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--glass-bg)', color: 'white', textAlign: 'center' }} />
+              <input type="number" value={editForm.volume_ml} onChange={e => setEditForm({...editForm, volume_ml: e.target.value})} placeholder="Volume (mL)" style={{ flex: 1, padding: '0.5rem', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--glass-bg)', color: 'white', textAlign: 'center' }} />
+            </div>
           </div>
         )}
       </div>
@@ -214,6 +237,30 @@ const PerfumeDetails = () => {
           {isSotdToday ? <X size={20} /> : <CalendarDays size={20} />}
           {isSotdToday ? 'Desfazer Uso de Hoje' : 'Estou usando hoje'}
         </button>
+
+        {perfume.full_details?.volume_ml && (
+          <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+              <span>Calculadora de Uso</span>
+              <span>{Math.max(0, (perfume.full_details.volume_ml - ((perfume.full_details.sprays_used || 0) / 12))).toFixed(1)} / {perfume.full_details.volume_ml} mL</span>
+            </div>
+            <div style={{ background: 'rgba(255,255,255,0.1)', height: '6px', borderRadius: '3px', marginBottom: '1rem', overflow: 'hidden' }}>
+              <div style={{ 
+                height: '100%', 
+                background: 'var(--accent)', 
+                width: `${Math.max(0, 100 - (((perfume.full_details.sprays_used || 0) / 12) / perfume.full_details.volume_ml * 100))}%` 
+              }} />
+            </div>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button onClick={() => handleAddSprays(3)} style={{ flex: 1, padding: '0.5rem', background: 'rgba(56, 189, 248, 0.1)', color: '#38bdf8', border: '1px solid rgba(56, 189, 248, 0.3)', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem' }}>+3 Borrifadas</button>
+              <button onClick={() => handleAddSprays(5)} style={{ flex: 1, padding: '0.5rem', background: 'rgba(56, 189, 248, 0.1)', color: '#38bdf8', border: '1px solid rgba(56, 189, 248, 0.3)', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem' }}>+5 Borrifadas</button>
+              <button onClick={() => handleAddSprays(10)} style={{ flex: 1, padding: '0.5rem', background: 'rgba(56, 189, 248, 0.1)', color: '#38bdf8', border: '1px solid rgba(56, 189, 248, 0.3)', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem' }}>+10 Borrifadas</button>
+            </div>
+            <p style={{ textAlign: 'center', margin: '0.5rem 0 0 0', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+              Restam aprox. {Math.max(0, (perfume.full_details.volume_ml * 12) - (perfume.full_details.sprays_used || 0))} borrifadas.
+            </p>
+          </div>
+        )}
       </div>
 
       {isLoading ? (

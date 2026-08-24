@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Navigate } from 'react-router-dom';
-import { Info, Flame, Trees, CloudOff, ArrowLeft, Droplet, CheckCircle2, Sparkles, Loader2, Search, Swords } from 'lucide-react';
-import { recommendNewPerfumes, recommendLayering, findClones, perfumeBattle } from '../utils/aiRecommender';
+import { Info, Flame, Trees, CloudOff, ArrowLeft, Droplet, CheckCircle2, Sparkles, Loader2, Search, Swords, MessageSquare, Camera, Send, ImageIcon } from 'lucide-react';
+import { recommendNewPerfumes, recommendLayering, findClones, perfumeBattle, chatWithSommelier } from '../utils/aiRecommender';
 import { useAppContext } from '../context/AppProvider';
 
 const Analysis = () => {
@@ -32,6 +32,11 @@ const Analysis = () => {
     const saved = localStorage.getItem('battleHistory');
     return saved ? JSON.parse(saved) : [];
   });
+
+  const [chatMessages, setChatMessages] = useState([{ role: 'model', text: 'Olá! Sou o Jean, seu Sommelier pessoal. Você pode me perguntar sobre seus perfumes ou enviar uma foto do seu look para eu recomendar o perfume ideal.' }]);
+  const [chatInput, setChatInput] = useState('');
+  const [chatImage, setChatImage] = useState(null);
+  const [isChatting, setIsChatting] = useState(false);
 
   if (!recommendation) {
     return <Navigate to="/" />;
@@ -107,6 +112,44 @@ const Analysis = () => {
     setIsBattling(false);
   };
 
+  const handleSendChatMessage = async () => {
+    if (!chatInput.trim() && !chatImage) return;
+    
+    const userMessageText = chatInput.trim() || 'Aqui está a foto.';
+    const newMessage = { role: 'user', text: userMessageText, image: chatImage?.preview };
+    
+    setChatMessages(prev => [...prev, newMessage]);
+    setChatInput('');
+    setIsChatting(true);
+
+    const aiResponse = await chatWithSommelier(
+      inventory,
+      chatMessages,
+      userMessageText,
+      chatImage?.base64,
+      chatImage?.mimeType
+    );
+
+    setChatMessages(prev => [...prev, { role: 'model', text: aiResponse }]);
+    setChatImage(null);
+    setIsChatting(false);
+  };
+
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setChatImage({
+          preview: reader.result,
+          base64: reader.result.split(',')[1],
+          mimeType: file.type
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   return (
     <div className="page-wrapper" style={{ paddingBottom: '3rem' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
@@ -152,6 +195,12 @@ const Analysis = () => {
           style={{ flex: 1, padding: '0.5rem', background: 'none', border: 'none', color: activeTab === 'batalha' ? '#ef4444' : 'var(--text-muted)', fontWeight: activeTab === 'batalha' ? 'bold' : 'normal', borderBottom: activeTab === 'batalha' ? '2px solid #ef4444' : 'none', display: 'flex', alignItems: 'center', gap: '0.25rem', justifyContent: 'center' }}
         >
           <Swords size={16} /> Batalha
+        </button>
+        <button 
+          onClick={() => setActiveTab('sommelier')}
+          style={{ flex: 1, padding: '0.5rem', background: 'none', border: 'none', color: activeTab === 'sommelier' ? 'var(--accent)' : 'var(--text-muted)', fontWeight: activeTab === 'sommelier' ? 'bold' : 'normal', borderBottom: activeTab === 'sommelier' ? '2px solid var(--accent)' : 'none', display: 'flex', alignItems: 'center', gap: '0.25rem', justifyContent: 'center' }}
+        >
+          <MessageSquare size={16} /> Consultor
         </button>
       </div>
 
@@ -465,6 +514,56 @@ const Analysis = () => {
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {activeTab === 'sommelier' && (
+        <div style={{ display: 'flex', flexDirection: 'column', height: '60vh' }}>
+          <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1rem', paddingBottom: '1rem' }}>
+            {chatMessages.map((msg, idx) => (
+              <div key={idx} style={{ alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start', maxWidth: '80%' }}>
+                <div style={{ background: msg.role === 'user' ? 'var(--accent)' : 'rgba(255,255,255,0.05)', color: msg.role === 'user' ? 'white' : 'var(--text-main)', padding: '0.75rem 1rem', borderRadius: '16px', borderBottomRightRadius: msg.role === 'user' ? '0' : '16px', borderBottomLeftRadius: msg.role === 'model' ? '0' : '16px' }}>
+                  {msg.image && <img src={msg.image} alt="Upload" style={{ width: '100%', borderRadius: '8px', marginBottom: '0.5rem' }} />}
+                  <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: '1.4' }}>{msg.text}</p>
+                </div>
+              </div>
+            ))}
+            {isChatting && (
+              <div style={{ alignSelf: 'flex-start', background: 'rgba(255,255,255,0.05)', padding: '0.75rem 1rem', borderRadius: '16px', borderBottomLeftRadius: '0' }}>
+                <Loader2 size={20} className="lucide-spin" color="var(--accent)" style={{ animation: 'spin 2s linear infinite' }} />
+              </div>
+            )}
+          </div>
+          
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-end' }}>
+            <label style={{ background: 'rgba(255,255,255,0.1)', padding: '0.75rem', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Camera size={20} color="var(--text-main)" />
+              <input type="file" accept="image/*" onChange={handleImageUpload} style={{ display: 'none' }} />
+            </label>
+            <div style={{ flex: 1, background: 'rgba(0,0,0,0.4)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.1)', padding: '0.5rem 1rem', display: 'flex', flexDirection: 'column' }}>
+              {chatImage && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', background: 'rgba(255,255,255,0.1)', padding: '0.25rem 0.5rem', borderRadius: '8px', alignSelf: 'flex-start' }}>
+                  <ImageIcon size={14} /> <span style={{ fontSize: '0.75rem' }}>Imagem Anexada</span>
+                  <button onClick={() => setChatImage(null)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: 0, marginLeft: '0.5rem' }}>x</button>
+                </div>
+              )}
+              <input 
+                type="text" 
+                placeholder="Pergunte ao Sommelier..." 
+                value={chatInput}
+                onChange={e => setChatInput(e.target.value)}
+                onKeyPress={e => e.key === 'Enter' && handleSendChatMessage()}
+                style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none' }}
+              />
+            </div>
+            <button 
+              onClick={handleSendChatMessage}
+              disabled={isChatting}
+              style={{ background: 'var(--accent)', padding: '0.75rem', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none' }}
+            >
+              <Send size={20} color="white" />
+            </button>
+          </div>
         </div>
       )}
     </div>

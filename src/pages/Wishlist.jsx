@@ -165,6 +165,12 @@ const Wishlist = () => {
                       <ShoppingCart size={16} /> Comprar Agora
                     </a>
                   )}
+
+                  <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem', flexWrap: 'wrap' }}>
+                    <a href={`https://www.amazon.com.br/s?k=${encodeURIComponent(item.name)}`} target="_blank" rel="noreferrer" style={{ fontSize: '0.75rem', padding: '0.4rem 0.6rem', background: 'rgba(255,255,255,0.05)', color: 'white', textDecoration: 'none', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)' }}>🛒 Amazon</a>
+                    <a href={`https://www.sephora.com.br/busca/?q=${encodeURIComponent(item.name)}`} target="_blank" rel="noreferrer" style={{ fontSize: '0.75rem', padding: '0.4rem 0.6rem', background: 'rgba(255,255,255,0.05)', color: 'white', textDecoration: 'none', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)' }}>🖤 Sephora</a>
+                    <a href={`https://lista.mercadolivre.com.br/${encodeURIComponent(item.name)}`} target="_blank" rel="noreferrer" style={{ fontSize: '0.75rem', padding: '0.4rem 0.6rem', background: 'rgba(255,255,255,0.05)', color: 'white', textDecoration: 'none', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)' }}>🤝 Mercado Livre</a>
+                  </div>
                 </div>
                 
                 <button onClick={() => removeFromWishlist(item.id)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', padding: '0.5rem' }}>

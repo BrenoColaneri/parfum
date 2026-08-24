@@ -453,3 +453,50 @@ Retorne EXATAMENTE um JSON válido com esta estrutura e nada mais:
     return null;
   }
 };
+
+export const chatWithSommelier = async (inventory, chatHistory, newMessage, imageBase64, imageMimeType) => {
+  if (!genAI || !import.meta.env.VITE_GEMINI_API_KEY) {
+    return "Desculpe, o Sommelier de Inteligência Artificial está offline. Verifique a configuração da sua chave de API.";
+  }
+
+  const inventorySummary = inventory.map(p => `- ${p.name} da ${p.brand} (${p.type})`).join('\n');
+
+  const systemInstruction = `Você é um Sommelier de Perfumes de elite e Consultor de Moda/Imagem chamado Jean. Você é charmoso, elegante e prestativo. Você está auxiliando o usuário na escolha da sua perfumaria. Você tem acesso à seguinte coleção de perfumes do usuário:
+${inventorySummary}
+
+Se o usuário mandar uma foto (de uma roupa, de um look, de um ambiente), analise o estilo, as cores, a vibe e sugira com grande entusiasmo qual perfume da coleção dele completaria a cena perfeitamente. 
+Se ele pedir sugestões, analise o clima e a ocasião descrita.
+Sempre responda em português do Brasil, de forma concisa, em no máximo 2 parágrafos curtos, num tom amigável e refinado. Responda diretamente à pergunta.`;
+
+  try {
+    const model = genAI.getGenerativeModel({ 
+      model: "gemini-3.5-flash",
+      systemInstruction: systemInstruction 
+    });
+
+    const historyForGemini = chatHistory.map(msg => ({
+      role: msg.role === 'user' ? 'user' : 'model',
+      parts: [{ text: msg.text }]
+    }));
+
+    const chat = model.startChat({
+      history: historyForGemini
+    });
+
+    const payload = [newMessage];
+    if (imageBase64 && imageMimeType) {
+      payload.push({
+        inlineData: {
+          data: imageBase64,
+          mimeType: imageMimeType
+        }
+      });
+    }
+
+    const result = await chat.sendMessage(payload);
+    return result.response.text().trim();
+  } catch (error) {
+    console.error("Gemini Sommelier Error:", error);
+    return "Tive um leve contratempo ao formular a resposta. Poderia repetir?";
+  }
+};
