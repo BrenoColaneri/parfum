@@ -55,15 +55,8 @@ Por favor, escolha o melhor perfume do inventário acima e retorne EXATAMENTE um
 }
 `;
 
-    let result;
-    try {
-      const modelLite = genAI.getGenerativeModel({ model: "gemini-3.5-flash-lite" });
-      result = await modelLite.generateContent(prompt);
-    } catch (e) {
-      console.log("Fallback to gemini-3.5-flash due to error:", e.message);
-      const modelPro = genAI.getGenerativeModel({ model: "gemini-3.5-flash" });
-      result = await modelPro.generateContent(prompt);
-    }
+    const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash-lite" });
+    const result = await model.generateContent(prompt);
     const response = await result.response;
     let text = response.text().trim();
     
@@ -139,15 +132,8 @@ Por favor, analise as informações (texto e/ou imagem do frasco), identifique c
       });
     }
 
-    let result;
-    try {
-      const modelLite = genAI.getGenerativeModel({ model: "gemini-3.5-flash-lite" });
-      result = await modelLite.generateContent(payload);
-    } catch (e) {
-      console.log("Fallback to gemini-3.5-flash due to error:", e.message);
-      const modelPro = genAI.getGenerativeModel({ model: "gemini-3.5-flash" });
-      result = await modelPro.generateContent(payload);
-    }
+    const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash-lite" });
+    const result = await model.generateContent(payload);
 
     const response = await result.response;
     let text = response.text().trim();
@@ -439,7 +425,7 @@ Retorne EXATAMENTE um JSON válido com esta estrutura e nada mais:
 `;
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash-lite" });
     const result = await model.generateContent(promptText);
     const text = await result.response.text();
     
@@ -470,7 +456,7 @@ Sempre responda em português do Brasil, de forma concisa, em no máximo 2 pará
 
   try {
     const model = genAI.getGenerativeModel({ 
-      model: "gemini-3.5-flash",
+      model: "gemini-3.5-flash-lite",
       systemInstruction: systemInstruction 
     });
 
