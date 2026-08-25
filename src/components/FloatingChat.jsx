@@ -69,8 +69,8 @@ const FloatingChat = () => {
         onClick={() => setIsOpen(true)}
         style={{
           position: 'fixed',
-          bottom: '160px',
-          right: '20px',
+          bottom: 'calc(var(--nav-height) + env(safe-area-inset-bottom) + 1.5rem + 56px + 1rem)',
+          right: '1.5rem',
           width: '56px',
           height: '56px',
           borderRadius: '28px',
@@ -92,14 +92,14 @@ const FloatingChat = () => {
       {isOpen && (
         <div style={{
           position: 'fixed',
-          bottom: '85px',
-          right: '20px',
-          width: '320px',
-          height: '450px',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
           background: 'var(--bg-dark)',
-          border: '1px solid var(--glass-border)',
-          borderRadius: '16px',
-          boxShadow: '0 10px 25px rgba(0,0,0,0.8)',
+          border: 'none',
+          borderRadius: 0,
+          boxShadow: 'none',
           display: 'flex',
           flexDirection: 'column',
           zIndex: 9999,
@@ -112,7 +112,11 @@ const FloatingChat = () => {
             borderBottom: '1px solid var(--glass-border)',
             display: 'flex',
             justifyContent: 'space-between',
-            alignItems: 'center'
+            alignItems: 'center',
+            paddingTop: 'calc(env(safe-area-inset-top) + 1rem)',
+            paddingBottom: '1rem',
+            paddingLeft: '1.5rem',
+            paddingRight: '1.5rem'
           }}>
             <h3 style={{ margin: 0, fontSize: '1.1rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <MessageSquare size={18} color="var(--accent)" />
@@ -126,11 +130,11 @@ const FloatingChat = () => {
           {/* Messages */}
           <div style={{
             flex: 1,
-            padding: '1rem',
+            padding: '1.5rem',
             overflowY: 'auto',
             display: 'flex',
             flexDirection: 'column',
-            gap: '1rem'
+            gap: '1.5rem'
           }}>
             {chatMessages.map((msg, idx) => (
               <div key={idx} style={{ alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start', maxWidth: '85%' }}>
@@ -158,11 +162,11 @@ const FloatingChat = () => {
 
           {/* Input Area */}
           <div style={{
-            padding: '0.75rem',
+            padding: '1rem 1.5rem calc(env(safe-area-inset-bottom) + 1.5rem) 1.5rem',
             borderTop: '1px solid var(--glass-border)',
             background: 'var(--glass-bg)',
             display: 'flex',
-            gap: '0.5rem',
+            gap: '0.75rem',
             alignItems: 'flex-end'
           }}>
             <label style={{ padding: '0.5rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

@@ -95,7 +95,7 @@ const Home = () => {
         className="action-btn" 
         disabled={!selectedOccasion || isThinking}
         onClick={handleRecommend}
-        style={{ marginTop: '1rem', marginBottom: '4rem' }}
+        style={{ marginTop: '1rem', marginBottom: '8rem' }}
       >
         {isThinking ? 'A IA está pensando...' : 'Gerar Recomendação Inteligente'}
       </button>
