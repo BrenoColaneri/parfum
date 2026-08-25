@@ -38,7 +38,7 @@ const Home = () => {
     ...occasions,
     ...(customOccasions || []).map(co => ({
       id: co.name,
-      icon: <span style={{ fontSize: '1.2rem', lineHeight: 1 }}>{co.emoji}</span>
+      icon: <span style={{ fontSize: '1.2rem', lineHeight: 1, filter: 'brightness(0) invert(1)' }}>{co.emoji}</span>
     }))
   ];
 
