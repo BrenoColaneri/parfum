@@ -65,6 +65,7 @@ const Inventory = () => {
         setNewPerfumePrice('');
         removeImage();
       } catch (error) {
+        console.error("Erro ao adicionar no inventário:", error);
         alert('Erro ao buscar perfume. Tente novamente.');
       } finally {
         setIsSearchingAI(false);

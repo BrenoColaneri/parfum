@@ -61,9 +61,9 @@ Por favor, escolha o melhor perfume do inventário acima e retorne EXATAMENTE um
     let text = response.text().trim();
     
     // Remove potential markdown wrappers if the model includes them despite instructions
-    if(text.startsWith('\`\`\`json')) text = text.replace('\`\`\`json', '');
-    if(text.startsWith('\`\`\`')) text = text.replace('\`\`\`', '');
-    if(text.endsWith('\`\`\`')) text = text.replace(/\`\`\`$/, '');
+    if(text.startsWith('```json')) text = text.replace('```json', '');
+    if(text.startsWith('```')) text = text.replace('```', '');
+    if(text.endsWith('```')) text = text.replace(/```$/, '');
     
     const parsedData = JSON.parse(text.trim());
     

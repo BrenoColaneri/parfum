@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation, Navigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Info, Flame, Trees, CloudOff, ArrowLeft, Droplet, CheckCircle2, Sparkles, Loader2, Search, Swords } from 'lucide-react';
 import { recommendNewPerfumes, recommendLayering, findClones, perfumeBattle } from '../utils/aiRecommender';
 import { useAppContext } from '../context/AppProvider';

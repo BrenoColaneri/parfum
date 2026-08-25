@@ -75,7 +75,7 @@ const Home = () => {
 
       <h3 className="section-header">Qual será a sua ocasião hoje?</h3>
       
-      <div className="occasion-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
+      <div className="occasion-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1rem' }}>
         {occasions.map(occ => (
           <div 
             key={occ.id}

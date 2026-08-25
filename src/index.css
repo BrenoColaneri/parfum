@@ -23,6 +23,10 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+button {
+  cursor: pointer;
+}
+
 body {
   font-family: 'Outfit', sans-serif;
   background: var(--bg-gradient);
@@ -34,12 +38,17 @@ body {
 
 /* App Container */
 .app-container {
-  width: 100vw;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
   min-height: 100vh;
   padding-top: calc(env(safe-area-inset-top, 20px) + 30px);
   padding-bottom: calc(var(--nav-height) + 20px + env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
+  position: relative;
+  background: var(--bg-dark);
+  box-shadow: 0 0 50px rgba(0,0,0,0.5);
 }
 
 /* Typography */
@@ -160,8 +169,10 @@ h1, h2, h3 {
 .action-btn {
   position: fixed;
   bottom: calc(var(--nav-height) + 1.5rem);
-  left: 1.5rem;
-  right: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 3rem);
+  max-width: calc(800px - 3rem);
   background: var(--accent);
   color: white;
   border: none;
@@ -179,8 +190,8 @@ h1, h2, h3 {
   background: #334155;
   color: #94a3b8;
   box-shadow: none;
-  transform: translateY(10px);
-  opacity: 0;
+  opacity: 0.7;
+  cursor: not-allowed;
   pointer-events: none;
 }
 
@@ -188,8 +199,10 @@ h1, h2, h3 {
 .bottom-nav {
   position: fixed;
   bottom: 0;
-  left: 0;
+  left: 50%;
+  transform: translateX(-50%);
   width: 100%;
+  max-width: 800px;
   height: calc(var(--nav-height) + env(safe-area-inset-bottom));
   background: rgba(15, 23, 42, 0.8);
   backdrop-filter: blur(20px);
@@ -252,7 +265,7 @@ h1, h2, h3 {
 .fab {
   position: fixed;
   bottom: calc(var(--nav-height) + env(safe-area-inset-bottom) + 1.5rem);
-  right: 1.5rem;
+  right: calc(max(1.5rem, 50vw - 400px + 1.5rem));
   width: 56px;
   height: 56px;
   border-radius: 28px;

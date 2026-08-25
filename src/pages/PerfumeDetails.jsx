@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Loader2, Info, User, CalendarDays, Star, Layers, Activity, Users, DollarSign, Plus, CheckCircle, Droplets, Trees, Flame, Wind, FlaskConical, Leaf, Edit2, Save, X } from 'lucide-react';
+import { ArrowLeft, Loader2, User, CalendarDays, Star, Layers, Activity, Users, DollarSign, Droplets, Trees, Flame, Wind, FlaskConical, Leaf, Edit2, Save, X } from 'lucide-react';
 import { useAppContext } from '../context/AppProvider';
 import { fetchPerfumeDetails } from '../utils/aiRecommender';
 
 const PerfumeDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { inventory, updatePerfumeDetails, updateFillLevel, updateUserReview, updatePricePaid, recordSotd, removeSotd, sotdHistory, editPerfumeBaseInfo } = useAppContext();
+  const { inventory, updatePerfumeDetails, updateUserReview, updatePricePaid, recordSotd, removeSotd, sotdHistory, editPerfumeBaseInfo } = useAppContext();
   
   const [perfume, setPerfume] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -124,12 +124,6 @@ const PerfumeDetails = () => {
     
     await updatePerfumeDetails(perfume.id, newDetails);
     setPerfume(prev => ({...prev, full_details: newDetails}));
-  };
-
-  const handleFillLevelChange = async (e) => {
-    const val = parseInt(e.target.value);
-    setPerfume(prev => ({...prev, fill_level: val}));
-    await updateFillLevel(perfume.id, val);
   };
 
   if (error) {

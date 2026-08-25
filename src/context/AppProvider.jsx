@@ -106,7 +106,7 @@ export const AppProvider = ({ children }) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const fetchData = async (userId) => {
+  const fetchData = async () => {
     // Fetch Inventory
     const { data: invData, error: invError } = await supabase.from('inventory').select('*');
     if (!invError && invData) setInventory(invData);
@@ -198,15 +198,6 @@ export const AppProvider = ({ children }) => {
       setInventory(inventory.map(p => p.id === id ? { ...p, full_details: details } : p));
     } else if (error) {
       console.error('Error updating details in Supabase:', error);
-    }
-  };
-
-  const updatePricePaid = async (id, pricePaid) => {
-    const { data, error } = await supabase.from('inventory').update({ price_paid: pricePaid }).match({ id }).select();
-    if (!error && data) {
-      setInventory(inventory.map(p => p.id === id ? { ...p, price_paid: pricePaid } : p));
-    } else if (error) {
-      console.error('Error updating price_paid in Supabase:', error);
     }
   };
 

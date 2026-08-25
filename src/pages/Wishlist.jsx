@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Heart, Plus, Trash2, Bell, TrendingDown, Tag, Sparkles, Droplets, Trees, Flame, Wind, Leaf, ShoppingCart } from 'lucide-react';
+import { Plus, Trash2, Bell, TrendingDown, Tag, Sparkles, Droplets, Trees, Flame, Wind, Leaf, ShoppingCart } from 'lucide-react';
 import { useAppContext } from '../context/AppProvider';
 import { enrichPerfumeData } from '../utils/aiRecommender';
 
@@ -32,6 +32,7 @@ const Wishlist = () => {
         setShowAddForm(false);
         setNewItem({ name: '', targetPrice: '', volume: '100ml', link: '' });
       } catch (error) {
+        console.error("Erro ao buscar perfume na IA:", error);
         alert('Erro ao buscar perfume. Tente novamente.');
       } finally {
         setIsSearchingAI(false);
