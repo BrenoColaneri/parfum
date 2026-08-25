@@ -353,7 +353,7 @@ Formato esperado:
 
 export const formatCustomOccasion = async (userInput) => {
   if (!genAI || !import.meta.env.VITE_GEMINI_API_KEY) {
-    return { name: userInput.charAt(0).toUpperCase() + userInput.slice(1).toLowerCase(), emoji: "✨" };
+    return { name: userInput.charAt(0).toUpperCase() + userInput.slice(1).toLowerCase(), lucideIcon: "Sparkles" };
   }
 
   try {
@@ -361,12 +361,13 @@ export const formatCustomOccasion = async (userInput) => {
 O usuário digitou a seguinte ocasião para usar um perfume: "${userInput}".
 Sua tarefa:
 1. Padronizar o nome dessa ocasião (corrigir erros ortográficos, colocar a primeira letra em maiúscula, mantendo conciso, ex: "cinema" vira "Cinema", "aniversario da mae" vira "Aniversário").
-2. Escolher APENAS UM emoji que melhor represente essa ocasião.
+2. Escolher APENAS UM nome de ícone EXATO da biblioteca 'lucide-react' que melhor represente essa ocasião.
+Exemplos válidos: BookOpen, GraduationCap, Building, Briefcase, Coffee, Music, Film, Ticket, Camera, Gamepad2, Plane, Car, Ship, Tent, Compass, Map, ShoppingBag, ShoppingCart, Wine, Beer, Martini, GlassWater, Utensils, Heart, Star, Sparkles, Moon, Sun, Cloud, Snowflake, Dumbbell, Activity, Bike, Trophy, Medal, Users, Home, Store, Trees, Leaf, Flower2, Palette, PenTool.
 
 Responda ESTRITAMENTE em formato JSON, sem crases de markdown:
 {
   "name": "Nome Padronizado",
-  "emoji": "🎉"
+  "lucideIcon": "Film"
 }
     `;
 
@@ -383,7 +384,7 @@ Responda ESTRITAMENTE em formato JSON, sem crases de markdown:
     return parsedData;
   } catch (error) {
     console.error("Error formatting custom occasion:", error);
-    return { name: userInput.charAt(0).toUpperCase() + userInput.slice(1).toLowerCase(), emoji: "✨" };
+    return { name: userInput.charAt(0).toUpperCase() + userInput.slice(1).toLowerCase(), lucideIcon: "Sparkles" };
   }
 };
 

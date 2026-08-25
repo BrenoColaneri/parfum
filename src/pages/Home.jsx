@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import * as LucideIcons from 'lucide-react';
 import { CloudRain, Thermometer, Droplets, Briefcase, Heart, Dumbbell, GlassWater, PartyPopper, Utensils, Coffee, Music, Sun, Moon, Plus, X, Loader2 } from 'lucide-react';
 import { useAppContext } from '../context/AppProvider';
 import { simulateAIRecommendation, formatCustomOccasion } from '../utils/aiRecommender';
@@ -36,10 +37,20 @@ const Home = () => {
 
   const allOccasions = [
     ...occasions,
-    ...(customOccasions || []).map(co => ({
-      id: co.name,
-      icon: <span style={{ fontSize: '1.2rem', lineHeight: 1, filter: 'brightness(0) invert(1)' }}>{co.emoji}</span>
-    }))
+    ...(customOccasions || []).map(co => {
+      let iconName = co.lucideIcon;
+      if (!iconName && co.name) {
+        const n = co.name.toLowerCase();
+        if (n.includes('faculdade') || n.includes('estudo')) iconName = 'GraduationCap';
+        else if (n.includes('cinema') || n.includes('filme')) iconName = 'Film';
+        else if (n.includes('igreja') || n.includes('culto')) iconName = 'Building';
+      }
+      const IconComp = (iconName && LucideIcons[iconName]) ? LucideIcons[iconName] : LucideIcons.Sparkles;
+      return {
+        id: co.name,
+        icon: <IconComp size={20} />
+      };
+    })
   ];
 
   const handleAddCustomOccasion = async () => {
@@ -175,7 +186,7 @@ const Home = () => {
                   }}
                 />
                 <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
-                  A IA vai padronizar o nome e escolher um emoji pra você.
+                  A IA vai padronizar o nome e escolher um ícone pra você.
                 </p>
               </div>
 
