@@ -23,6 +23,7 @@ export const AppProvider = ({ children }) => {
   const [inventory, setInventory] = useState(initialInventory);
   const [wishlist, setWishlist] = useState(initialWishlist);
   const [sotdHistory, setSotdHistory] = useState([]);
+  const [customOccasions, setCustomOccasions] = useState([]);
   const [weather, setWeather] = useState({
     city: 'São Paulo',
     temp: 18,
@@ -99,6 +100,7 @@ export const AppProvider = ({ children }) => {
         setInventory([]);
         setWishlist([]);
         setSotdHistory([]);
+        setCustomOccasions([]);
       }
       setIsAuthLoading(false);
     });
@@ -131,9 +133,16 @@ export const AppProvider = ({ children }) => {
     }
 
     // Fetch SOTD History
-    const { data: sotdData, error: sotdError } = await supabase.from('sotd_history').select('*').order('date', { ascending: false });
-    if (!sotdError && sotdData) {
-      setSotdHistory(sotdData);
+    const { data: sotdData, error: sotdError } = await supabase.from('sotd').select('*').order('date', { ascending: false });
+    if (!sotdError && sotdData) setSotdHistory(sotdData);
+
+    const savedOccasions = localStorage.getItem('customOccasions');
+    if (savedOccasions) {
+      try {
+        setCustomOccasions(JSON.parse(savedOccasions));
+      } catch (e) {
+        console.error(e);
+      }
     }
   };
 
@@ -282,13 +291,36 @@ export const AppProvider = ({ children }) => {
     }
   };
 
+  const addCustomOccasion = (occasion) => {
+    const newOccasions = [...customOccasions, occasion];
+    setCustomOccasions(newOccasions);
+    localStorage.setItem('customOccasions', JSON.stringify(newOccasions));
+  };
+
   return (
     <AppContext.Provider value={{ 
-      isAuthenticated, isAuthLoading, user, login, signup, logout, 
-      inventory, addPerfume, removePerfume, updatePerfumeDetails, updateFillLevel, updateUserReview, editPerfumeBaseInfo,
-      wishlist, addToWishlist, removeFromWishlist, 
-      sotdHistory, recordSotd, removeSotd,
-      weather 
+      isAuthenticated, 
+      isAuthLoading, 
+      user, 
+      inventory, 
+      wishlist, 
+      weather, 
+      sotdHistory,
+      customOccasions,
+      addCustomOccasion,
+      login, 
+      signup, 
+      logout, 
+      addPerfume, 
+      removePerfume, 
+      updatePerfumeDetails, 
+      updateFillLevel, 
+      updateUserReview, 
+      editPerfumeBaseInfo,
+      addToWishlist, 
+      removeFromWishlist, 
+      recordSotd, 
+      removeSotd
     }}>
       {children}
     </AppContext.Provider>

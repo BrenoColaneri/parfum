@@ -346,8 +346,44 @@ Formato esperado:
     
     return null;
   } catch (error) {
-    console.error("Gemini API Error (Battle):", error);
+    console.error("Gemini AI Error:", error);
     return null;
+  }
+};
+
+export const formatCustomOccasion = async (userInput) => {
+  if (!genAI || !import.meta.env.VITE_GEMINI_API_KEY) {
+    return { name: userInput.charAt(0).toUpperCase() + userInput.slice(1).toLowerCase(), emoji: "✨" };
+  }
+
+  try {
+    const prompt = `
+O usuário digitou a seguinte ocasião para usar um perfume: "${userInput}".
+Sua tarefa:
+1. Padronizar o nome dessa ocasião (corrigir erros ortográficos, colocar a primeira letra em maiúscula, mantendo conciso, ex: "cinema" vira "Cinema", "aniversario da mae" vira "Aniversário").
+2. Escolher APENAS UM emoji que melhor represente essa ocasião.
+
+Responda ESTRITAMENTE em formato JSON, sem crases de markdown:
+{
+  "name": "Nome Padronizado",
+  "emoji": "🎉"
+}
+    `;
+
+    const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash-lite" });
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    let text = response.text().trim();
+    
+    if(text.startsWith('```json')) text = text.replace('```json', '');
+    if(text.startsWith('```')) text = text.replace('```', '');
+    if(text.endsWith('```')) text = text.replace(/```$/, '');
+    
+    const parsedData = JSON.parse(text.trim());
+    return parsedData;
+  } catch (error) {
+    console.error("Error formatting custom occasion:", error);
+    return { name: userInput.charAt(0).toUpperCase() + userInput.slice(1).toLowerCase(), emoji: "✨" };
   }
 };
 

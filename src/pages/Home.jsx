@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CloudRain, Thermometer, Droplets, Briefcase, Heart, Dumbbell, GlassWater, PartyPopper, Utensils, Coffee, Music, Sun, Moon } from 'lucide-react';
+import { CloudRain, Thermometer, Droplets, Briefcase, Heart, Dumbbell, GlassWater, PartyPopper, Utensils, Coffee, Music, Sun, Moon, Plus, X, Loader2 } from 'lucide-react';
 import { useAppContext } from '../context/AppProvider';
-import { simulateAIRecommendation } from '../utils/aiRecommender';
+import { simulateAIRecommendation, formatCustomOccasion } from '../utils/aiRecommender';
 
 const Home = () => {
   const navigate = useNavigate();
-  const { weather, inventory, user } = useAppContext();
+  const { weather, inventory, user, customOccasions, addCustomOccasion } = useAppContext();
   const [selectedOccasion, setSelectedOccasion] = useState(null);
   const [isThinking, setIsThinking] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newOccasionText, setNewOccasionText] = useState('');
+  const [isAddingOccasion, setIsAddingOccasion] = useState(false);
 
   let userName = user?.user_metadata?.name;
   if (!userName && user?.email) {
@@ -30,6 +33,30 @@ const Home = () => {
     { id: 'Parque', icon: <Sun size={20} /> },
     { id: 'Dormir', icon: <Moon size={20} /> }
   ];
+
+  const allOccasions = [
+    ...occasions,
+    ...(customOccasions || []).map(co => ({
+      id: co.name,
+      icon: <span style={{ fontSize: '1.2rem', lineHeight: 1 }}>{co.emoji}</span>
+    }))
+  ];
+
+  const handleAddCustomOccasion = async () => {
+    if (!newOccasionText.trim()) return;
+    setIsAddingOccasion(true);
+    try {
+      const result = await formatCustomOccasion(newOccasionText);
+      addCustomOccasion(result);
+      setNewOccasionText('');
+      setShowAddModal(false);
+    } catch (error) {
+      console.error(error);
+      alert("Erro ao adicionar ocasião.");
+    } finally {
+      setIsAddingOccasion(false);
+    }
+  };
 
   const handleRecommend = async () => {
     if (selectedOccasion && inventory.length > 0) {
@@ -76,7 +103,7 @@ const Home = () => {
       <h3 className="section-header">Qual será a sua ocasião hoje?</h3>
       
       <div className="occasion-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1rem' }}>
-        {occasions.map(occ => (
+        {allOccasions.map(occ => (
           <div 
             key={occ.id}
             className={`perfume-item ${selectedOccasion === occ.id ? 'selected' : ''}`}
@@ -89,6 +116,18 @@ const Home = () => {
             <p>{occ.id}</p>
           </div>
         ))}
+        
+        {/* Add Occasion Button */}
+        <div 
+          className="perfume-item"
+          onClick={() => setShowAddModal(true)}
+          style={{ padding: '1.25rem 1rem', borderStyle: 'dashed', background: 'transparent' }}
+        >
+          <div className="perfume-icon-wrapper" style={{ background: 'var(--glass-bg)' }}>
+            <Plus size={20} />
+          </div>
+          <p>Adicionar</p>
+        </div>
       </div>
 
       <button 
@@ -100,6 +139,62 @@ const Home = () => {
       </button>
 
       <div style={{ height: '120px' }}></div>
+
+      {showAddModal && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(5px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 1000, padding: '1rem'
+        }}>
+          <div className="glass-card" style={{ width: '100%', maxWidth: '400px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+              <h3 style={{ margin: 0 }}>Nova Ocasião</h3>
+              <button onClick={() => setShowAddModal(false)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)' }}>
+                <X size={24} />
+              </button>
+            </div>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>
+                  Qual a ocasião?
+                </label>
+                <input 
+                  type="text" 
+                  value={newOccasionText}
+                  onChange={e => setNewOccasionText(e.target.value)}
+                  placeholder="Ex: Ir ao cinema com amigos"
+                  style={{
+                    width: '100%', padding: '1rem', borderRadius: '12px',
+                    background: 'rgba(0,0,0,0.2)', border: '1px solid var(--glass-border)',
+                    color: 'var(--text-main)', fontSize: '1rem', outline: 'none'
+                  }}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') handleAddCustomOccasion();
+                  }}
+                />
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
+                  A IA vai padronizar o nome e escolher um emoji pra você.
+                </p>
+              </div>
+
+              <button 
+                onClick={handleAddCustomOccasion}
+                disabled={!newOccasionText.trim() || isAddingOccasion}
+                style={{
+                  background: 'var(--accent)', color: 'white', border: 'none',
+                  padding: '1rem', borderRadius: '12px', fontWeight: '600',
+                  display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem',
+                  opacity: (!newOccasionText.trim() || isAddingOccasion) ? 0.5 : 1
+                }}
+              >
+                {isAddingOccasion ? <><Loader2 size={18} className="animate-spin" /> Padronizando...</> : 'Adicionar Ocasião'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
