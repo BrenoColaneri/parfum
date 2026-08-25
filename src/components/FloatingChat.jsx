@@ -69,7 +69,7 @@ const FloatingChat = () => {
         onClick={() => setIsOpen(true)}
         style={{
           position: 'fixed',
-          bottom: '85px',
+          bottom: '160px',
           right: '20px',
           width: '56px',
           height: '56px',
