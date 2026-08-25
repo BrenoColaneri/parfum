@@ -55,7 +55,7 @@ Por favor, escolha o melhor perfume do inventário acima e retorne EXATAMENTE um
 }
 `;
 
-    const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash-lite" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     const result = await model.generateContent(prompt);
     const response = await result.response;
     let text = response.text().trim();
@@ -132,7 +132,7 @@ Por favor, analise as informações (texto e/ou imagem do frasco), identifique c
       });
     }
 
-    const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash-lite" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     const result = await model.generateContent(payload);
 
     const response = await result.response;
@@ -191,7 +191,7 @@ export const fetchPerfumeDetails = async (perfumeName) => {
   }
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash-lite" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     const promptText = `
 Você é uma enciclopédia de perfumaria de luxo, agindo como o banco de dados do Fragrantica.
@@ -257,7 +257,7 @@ export const findClones = async (perfumeName) => {
   }
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash-lite" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     const promptText = `
 Você é um especialista em contratipos e clones de perfumes (dupes) disponíveis no Brasil.
@@ -312,7 +312,7 @@ export const perfumeBattle = async (perfume1, perfume2) => {
   }
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash-lite" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     const promptText = `
 Você é um juiz experiente na comunidade de perfumaria.
@@ -371,7 +371,7 @@ Responda ESTRITAMENTE em formato JSON, sem crases de markdown:
 }
     `;
 
-    const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash-lite" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     const result = await model.generateContent(prompt);
     const response = await result.response;
     let text = response.text().trim();
@@ -401,7 +401,7 @@ export const recommendNewPerfumes = async (inventoryList) => {
   }
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash-lite" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     const inventoryNames = inventoryList.map(p => `${p.name} (${p.brand})`).join(", ");
 
     const promptText = `
@@ -467,7 +467,7 @@ Retorne EXATAMENTE um JSON válido com esta estrutura e nada mais:
 `;
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash-lite" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     const result = await model.generateContent(promptText);
     const text = await result.response.text();
     
@@ -498,14 +498,16 @@ Sempre responda em português do Brasil, de forma concisa, em no máximo 2 pará
 
   try {
     const model = genAI.getGenerativeModel({ 
-      model: "gemini-3.5-flash-lite",
+      model: "gemini-1.5-flash",
       systemInstruction: systemInstruction 
     });
 
-    const historyForGemini = chatHistory.map(msg => ({
-      role: msg.role === 'user' ? 'user' : 'model',
-      parts: [{ text: msg.text }]
-    }));
+    const historyForGemini = chatHistory
+      .filter((msg, idx) => !(idx === 0 && msg.role === 'model'))
+      .map(msg => ({
+        role: msg.role === 'user' ? 'user' : 'model',
+        parts: [{ text: msg.text }]
+      }));
 
     const chat = model.startChat({
       history: historyForGemini

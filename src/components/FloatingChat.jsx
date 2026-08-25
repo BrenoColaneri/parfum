@@ -185,7 +185,7 @@ const FloatingChat = () => {
                 placeholder="Pergunte algo..." 
                 value={chatInput}
                 onChange={e => setChatInput(e.target.value)}
-                onKeyPress={e => e.key === 'Enter' && handleSendChatMessage()}
+                onKeyPress={e => e.key === 'Enter' && !isChatting && handleSendChatMessage()}
                 style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '0.9rem' }}
               />
             </div>
