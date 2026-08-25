@@ -69,7 +69,7 @@ const FloatingChat = () => {
         onClick={() => setIsOpen(true)}
         style={{
           position: 'fixed',
-          bottom: '80px',
+          bottom: '85px',
           right: '20px',
           width: '56px',
           height: '56px',
@@ -92,11 +92,11 @@ const FloatingChat = () => {
       {isOpen && (
         <div style={{
           position: 'fixed',
-          bottom: '80px',
+          bottom: '85px',
           right: '20px',
           width: '320px',
           height: '450px',
-          background: 'var(--bg-color)',
+          background: 'var(--bg-dark)',
           border: '1px solid var(--glass-border)',
           borderRadius: '16px',
           boxShadow: '0 10px 25px rgba(0,0,0,0.8)',
