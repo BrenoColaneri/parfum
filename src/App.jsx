@@ -19,6 +19,7 @@ import Analysis from './pages/Analysis';
 import PerfumeDetails from './pages/PerfumeDetails';
 import History from './pages/History';
 import BottomNav from './components/BottomNav';
+import FloatingChat from './components/FloatingChat';
 
 const PrivateRoute = ({ children }) => {
   const { isAuthenticated, isAuthLoading } = useAppContext();
@@ -55,6 +56,7 @@ function App() {
           <Route path="/login" element={null} />
           <Route path="*" element={
             <PrivateRoute>
+              <FloatingChat />
               <BottomNav />
             </PrivateRoute>
           } />
