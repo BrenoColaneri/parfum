@@ -44,6 +44,8 @@ const Home = () => {
         if (n.includes('faculdade') || n.includes('estudo')) iconName = 'GraduationCap';
         else if (n.includes('cinema') || n.includes('filme')) iconName = 'Film';
         else if (n.includes('igreja') || n.includes('culto')) iconName = 'Building';
+        else if (n.includes('shopping')) iconName = 'ShoppingBag';
+        else if (n.includes('futebol') || n.includes('esporte')) iconName = 'Activity';
       }
       const IconComp = (iconName && LucideIcons[iconName]) ? LucideIcons[iconName] : LucideIcons.Sparkles;
       return {
@@ -52,7 +54,7 @@ const Home = () => {
         isCustom: true
       };
     })
-  ];
+  ].sort((a, b) => a.id.localeCompare(b.id));
 
   const handleAddCustomOccasion = async () => {
     if (!newOccasionText.trim()) return;
