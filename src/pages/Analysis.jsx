@@ -10,7 +10,7 @@ const Analysis = () => {
   const { inventory, recordSotd } = useAppContext();
   
   const recommendation = location.state?.recommendation;
-  const [activeTab, setActiveTab] = useState('uso');
+  const [activeTab, setActiveTab] = useState(recommendation ? 'uso' : 'descobrir');
   const [discoveries, setDiscoveries] = useState([]);
   const [isDiscovering, setIsDiscovering] = useState(false);
   const [layeringResult, setLayeringResult] = useState(null);
@@ -33,11 +33,7 @@ const Analysis = () => {
     return saved ? JSON.parse(saved) : [];
   });
 
-  if (!recommendation) {
-    return <Navigate to="/" />;
-  }
-
-  const { perfume, rationale, recommendedNotes = [], avoidNotes = [], occasion, weather } = recommendation;
+  const { perfume, rationale, recommendedNotes = [], avoidNotes = [], occasion, weather } = recommendation || {};
 
   const renderIcon = (type) => {
     if (type.includes('Fresco')) return <Droplet size={80} color="#38bdf8" style={{ marginBottom: '1rem' }} />;
@@ -123,12 +119,14 @@ const Analysis = () => {
       </div>
 
       <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.5rem', overflowX: 'auto', whiteSpace: 'nowrap' }}>
-        <button 
-          onClick={() => setActiveTab('uso')}
-          style={{ flex: 1, padding: '0.5rem', background: 'none', border: 'none', color: activeTab === 'uso' ? 'var(--accent)' : 'var(--text-muted)', fontWeight: activeTab === 'uso' ? 'bold' : 'normal', borderBottom: activeTab === 'uso' ? '2px solid var(--accent)' : 'none' }}
-        >
-          O Que Usar
-        </button>
+        {recommendation && (
+          <button 
+            onClick={() => setActiveTab('uso')}
+            style={{ flex: 1, padding: '0.5rem', background: 'none', border: 'none', color: activeTab === 'uso' ? 'var(--accent)' : 'var(--text-muted)', fontWeight: activeTab === 'uso' ? 'bold' : 'normal', borderBottom: activeTab === 'uso' ? '2px solid var(--accent)' : 'none' }}
+          >
+            O Que Usar
+          </button>
+        )}
         <button 
           onClick={() => setActiveTab('descobrir')}
           style={{ flex: 1, padding: '0.5rem', background: 'none', border: 'none', color: activeTab === 'descobrir' ? 'var(--accent)' : 'var(--text-muted)', fontWeight: activeTab === 'descobrir' ? 'bold' : 'normal', borderBottom: activeTab === 'descobrir' ? '2px solid var(--accent)' : 'none' }}
@@ -155,7 +153,7 @@ const Analysis = () => {
         </button>
       </div>
 
-      {activeTab === 'uso' && (
+      {activeTab === 'uso' && recommendation && (
         <>
           <h3 className="subtitle" style={{ marginBottom: '1rem' }}>Contexto Atual</h3>
           <div className="analysis-summary">
