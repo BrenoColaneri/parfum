@@ -79,10 +79,6 @@ const History = () => {
 
   return (
     <div className="page-wrapper" style={{ paddingBottom: '5rem' }}>
-      <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', color: 'white', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem', padding: 0 }}>
-        <ArrowLeft size={20} /> Voltar
-      </button>
-
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
         <h2 className="page-title" style={{ margin: 0 }}>Perfil Olfativo</h2>
       </div>
