@@ -297,6 +297,12 @@ export const AppProvider = ({ children }) => {
     localStorage.setItem('customOccasions', JSON.stringify(newOccasions));
   };
 
+  const removeCustomOccasion = (name) => {
+    const newOccasions = customOccasions.filter(o => o.name !== name);
+    setCustomOccasions(newOccasions);
+    localStorage.setItem('customOccasions', JSON.stringify(newOccasions));
+  };
+
   return (
     <AppContext.Provider value={{ 
       isAuthenticated, 
@@ -308,6 +314,7 @@ export const AppProvider = ({ children }) => {
       sotdHistory,
       customOccasions,
       addCustomOccasion,
+      removeCustomOccasion,
       login, 
       signup, 
       logout, 

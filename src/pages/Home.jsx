@@ -7,7 +7,7 @@ import { simulateAIRecommendation, formatCustomOccasion } from '../utils/aiRecom
 
 const Home = () => {
   const navigate = useNavigate();
-  const { weather, inventory, user, customOccasions, addCustomOccasion } = useAppContext();
+  const { weather, inventory, user, customOccasions, addCustomOccasion, removeCustomOccasion } = useAppContext();
   const [selectedOccasion, setSelectedOccasion] = useState(null);
   const [isThinking, setIsThinking] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -48,7 +48,8 @@ const Home = () => {
       const IconComp = (iconName && LucideIcons[iconName]) ? LucideIcons[iconName] : LucideIcons.Sparkles;
       return {
         id: co.name,
-        icon: <IconComp size={20} />
+        icon: <IconComp size={20} />,
+        isCustom: true
       };
     })
   ];
@@ -119,8 +120,21 @@ const Home = () => {
             key={occ.id}
             className={`perfume-item ${selectedOccasion === occ.id ? 'selected' : ''}`}
             onClick={() => setSelectedOccasion(occ.id)}
-            style={{ padding: '1.25rem 1rem' }}
+            style={{ padding: '1.25rem 1rem', position: 'relative' }}
           >
+            {occ.isCustom && (
+              <button
+                onClick={(e) => { 
+                  e.stopPropagation(); 
+                  removeCustomOccasion(occ.id);
+                  if (selectedOccasion === occ.id) setSelectedOccasion(null);
+                }}
+                style={{ position: 'absolute', top: '0.25rem', right: '0.25rem', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '0.25rem', display: 'flex' }}
+                title="Remover ocasião"
+              >
+                <X size={14} />
+              </button>
+            )}
             <div className="perfume-icon-wrapper">
               {occ.icon}
             </div>
