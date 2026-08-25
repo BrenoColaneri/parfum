@@ -59,17 +59,15 @@ const Analysis = () => {
     }
   }, [activeTab, inventory, discoveries.length]);
 
-  useEffect(() => {
-    if (activeTab === 'laboratorio' && !layeringResult) {
-      const getLayering = async () => {
-        setIsLayering(true);
-        const result = await recommendLayering(inventory);
-        setLayeringResult(result);
-        setIsLayering(false);
-      };
-      getLayering();
-    }
-  }, [activeTab, inventory, layeringResult]);
+  const [layeringBaseId, setLayeringBaseId] = useState('');
+
+  const handleGenerateLayering = async () => {
+    setIsLayering(true);
+    const basePerfume = layeringBaseId ? inventory.find(p => p.id === layeringBaseId) : null;
+    const result = await recommendLayering(inventory, basePerfume);
+    setLayeringResult(result);
+    setIsLayering(false);
+  };
 
   const handleConfirmUse = async () => {
     const todayStr = new Date().toISOString().split('T')[0];
@@ -261,7 +259,33 @@ const Analysis = () => {
           <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
             <Sparkles size={32} color="#a855f7" style={{ marginBottom: '0.5rem' }} />
             <h3 style={{ margin: 0, fontSize: '1.2rem' }}>O Laboratório do Alquimista</h3>
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>A IA está descobrindo a combinação perfeita entre dois frascos da sua coleção...</p>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Misture dois frascos da sua coleção para criar uma fragrância única.</p>
+          </div>
+          
+          <div className="glass-card" style={{ marginBottom: '1rem', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>
+                Selecione a Base (opcional)
+              </label>
+              <select 
+                value={layeringBaseId}
+                onChange={(e) => setLayeringBaseId(e.target.value)}
+                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }}
+              >
+                <option value="">Deixe a IA escolher as duas...</option>
+                {inventory.map(p => (
+                  <option key={p.id} value={p.id}>{p.name} ({p.brand})</option>
+                ))}
+              </select>
+            </div>
+            
+            <button 
+              onClick={handleGenerateLayering}
+              disabled={isLayering || inventory.length < 2}
+              style={{ background: '#a855f7', color: 'white', border: 'none', padding: '1rem', borderRadius: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', opacity: isLayering || inventory.length < 2 ? 0.5 : 1 }}
+            >
+              {isLayering ? <><Loader2 size={18} className="lucide-spin" /> Misturando...</> : 'Gerar Combinação'}
+            </button>
           </div>
 
           {isLayering ? (

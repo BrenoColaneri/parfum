@@ -435,19 +435,24 @@ Retorne EXATAMENTE um array JSON válido com esta estrutura e nada mais:
   }
 };
 
-export const recommendLayering = async (inventory) => {
+export const recommendLayering = async (inventory, basePerfume = null) => {
   if (!inventory || inventory.length < 2) {
     return null;
   }
 
   const inventorySummary = inventory.map(p => `- ${p.name} da ${p.brand} (${p.type})`).join('\n');
 
+  let instructionText = `Escolha EXATAMENTE 2 perfumes diferentes dessa lista que, quando borrifados juntos (um por cima do outro), criam uma terceira fragrância espetacular.`;
+  if (basePerfume) {
+    instructionText = `O usuário selecionou o perfume "${basePerfume.name} da ${basePerfume.brand}" como base. Escolha EXATAMENTE UM outro perfume da lista que, misturado a esta base escolhida, cria uma terceira fragrância espetacular. O primeiro perfume no JSON DEVE OBRIGATORIAMENTE ser "${basePerfume.name}".`;
+  }
+
   const promptText = `
 Você é um mestre perfumista especialista na arte de "Layering" (misturar dois perfumes diferentes na pele).
 Abaixo está a coleção de perfumes do usuário:
 ${inventorySummary}
 
-Escolha EXATAMENTE 2 perfumes diferentes dessa lista que, quando borrifados juntos (um por cima do outro), criam uma terceira fragrância espetacular. 
+${instructionText}
 Eles devem se complementar (ex: um cítrico cortando o doce de outro, ou um couro dando peso a um floral).
 Crie um nome imaginativo para essa nova mistura.
 
