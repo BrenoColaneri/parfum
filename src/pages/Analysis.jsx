@@ -106,15 +106,9 @@ const Analysis = () => {
   return (
     <div className="page-wrapper" style={{ paddingBottom: '3rem' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
-        <button 
-          onClick={() => navigate('/')} 
-          style={{ background: 'none', border: 'none', color: 'var(--text-main)', padding: '0.5rem', cursor: 'pointer' }}
-        >
-          <ArrowLeft size={24} />
-        </button>
         <h2 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}>
           <Info size={24} color="var(--accent)" />
-          Sua Recomendação
+          {recommendation ? 'Sua Recomendação' : 'Ferramentas de IA'}
         </h2>
       </div>
 
