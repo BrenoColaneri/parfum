@@ -203,7 +203,7 @@ const Analysis = () => {
             </div>
           </div>
           
-          <button className="action-btn" onClick={handleConfirmUse} style={{ position: 'relative', bottom: 0, left: 0, right: 0, width: '100%' }}>
+          <button className="action-btn" onClick={handleConfirmUse} style={{ position: 'relative', bottom: 0, left: 0, right: 0, width: '100%', transform: 'none' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
               <CheckCircle2 size={20} />
               Confirmar Uso
