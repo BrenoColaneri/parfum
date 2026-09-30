@@ -132,11 +132,19 @@ Por favor, analise as informações (texto e/ou imagem do frasco), identifique c
       });
     }
 
-    const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash-lite" });
-    const result = await model.generateContent(payload);
-
-    const response = await result.response;
-    let text = response.text().trim();
+    let text = "";
+    try {
+      const modelLite = genAI.getGenerativeModel({ model: "gemini-3.5-flash-lite" });
+      const result = await modelLite.generateContent(payload);
+      const response = await result.response;
+      text = response.text().trim();
+    } catch (liteError) {
+      console.warn("Fallback to gemini-3.5-flash in enrichPerfumeData due to:", liteError.message);
+      const modelPro = genAI.getGenerativeModel({ model: "gemini-3.5-flash" });
+      const result = await modelPro.generateContent(payload);
+      const response = await result.response;
+      text = response.text().trim();
+    }
     
     // Safer JSON extraction in case there's text before/after
     const jsonMatch = text.match(/\{[\s\S]*\}/);
