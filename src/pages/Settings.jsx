@@ -1,33 +1,97 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppProvider';
 import { 
   LogOut, 
-  Moon, 
+  Moon,
+  Sun,
   Key, 
   Mail, 
   Phone, 
   AtSign, 
   MessageSquare 
 } from 'lucide-react';
+import { supabase } from '../utils/supabaseClient';
 
 const Settings = () => {
   const { logout, user } = useAppContext();
   const navigate = useNavigate();
+  const [isLightMode, setIsLightMode] = useState(false);
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('app-theme');
+    if (savedTheme === 'light') {
+      setIsLightMode(true);
+      document.body.classList.add('light-theme');
+    }
+  }, []);
 
   const handleLogout = async () => {
     await logout();
     navigate('/login');
   };
 
-  const handleNotImplemented = (feature) => {
-    alert(`${feature} será ativado na próxima fase de desenvolvimento.`);
+  const handleChangePassword = async () => {
+    const newPassword = window.prompt("Digite sua nova senha (mínimo 6 caracteres):");
+    if (!newPassword) return;
+    
+    if (newPassword.length < 6) {
+      alert("A senha deve ter pelo menos 6 caracteres.");
+      return;
+    }
+
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) throw error;
+      alert("Senha atualizada com sucesso!");
+    } catch (error) {
+      alert("Erro ao atualizar senha: " + error.message);
+    }
+  };
+
+  const handleChangeEmail = async () => {
+    const newEmail = window.prompt("Digite seu novo endereço de e-mail:");
+    if (!newEmail) return;
+
+    // Regex simples para validação de email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(newEmail)) {
+      alert("Por favor, insira um e-mail válido.");
+      return;
+    }
+
+    try {
+      const { error } = await supabase.auth.updateUser({ email: newEmail });
+      if (error) throw error;
+      alert("Um link de confirmação foi enviado para ambos os e-mails (antigo e novo). Por favor, verifique sua caixa de entrada.");
+    } catch (error) {
+      alert("Erro ao atualizar e-mail: " + error.message);
+    }
   };
 
   const handleThemeToggle = () => {
-    // Basic theme toggle simulation
-    document.body.classList.toggle('light-theme');
-    alert('Tema alterado! (Simulação visual ativa)');
+    const newMode = !isLightMode;
+    setIsLightMode(newMode);
+    
+    if (newMode) {
+      document.body.classList.add('light-theme');
+      localStorage.setItem('app-theme', 'light');
+    } else {
+      document.body.classList.remove('light-theme');
+      localStorage.setItem('app-theme', 'dark');
+    }
+  };
+
+  const handleContactWhatsApp = () => {
+    window.open("https://wa.me/5511999999999?text=Olá, preciso de suporte no app Biblioteria.", "_blank");
+  };
+
+  const handlePhoneCall = () => {
+    window.location.href = "tel:+5511999999999";
+  };
+
+  const handleEmailSupport = () => {
+    window.location.href = "mailto:suporte@biblioteria.com?subject=Suporte Biblioteria";
   };
 
   const buttonStyle = {
@@ -64,7 +128,7 @@ const Settings = () => {
         
         <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '0', padding: '0', overflow: 'hidden' }}>
           <button 
-            onClick={() => handleNotImplemented('Mudar Senha')}
+            onClick={handleChangePassword}
             style={buttonStyle}
             className="settings-btn"
           >
@@ -73,7 +137,7 @@ const Settings = () => {
           </button>
           
           <button 
-            onClick={() => handleNotImplemented('Mudar Email')}
+            onClick={handleChangeEmail}
             style={lastButtonStyle}
             className="settings-btn"
           >
@@ -92,8 +156,12 @@ const Settings = () => {
             style={lastButtonStyle}
             className="settings-btn"
           >
-            <Moon size={20} style={{ marginRight: '1rem', color: 'var(--accent)' }} />
-            Alterar Tema
+            {isLightMode ? (
+              <Sun size={20} style={{ marginRight: '1rem', color: 'var(--accent)' }} />
+            ) : (
+              <Moon size={20} style={{ marginRight: '1rem', color: 'var(--accent)' }} />
+            )}
+            {isLightMode ? 'Ativar Modo Escuro' : 'Ativar Modo Claro'}
           </button>
         </div>
       </div>
@@ -103,30 +171,30 @@ const Settings = () => {
         
         <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '0', padding: '0', overflow: 'hidden' }}>
           <button 
-            onClick={() => handleNotImplemented('Mensagem de Contato')}
+            onClick={handleContactWhatsApp}
             style={buttonStyle}
             className="settings-btn"
           >
             <MessageSquare size={20} style={{ marginRight: '1rem', color: 'var(--accent)' }} />
-            Contato via Mensagem
+            Contato via WhatsApp
           </button>
 
           <button 
-            onClick={() => handleNotImplemented('Telefone de Suporte')}
+            onClick={handlePhoneCall}
             style={buttonStyle}
             className="settings-btn"
           >
             <Phone size={20} style={{ marginRight: '1rem', color: 'var(--accent)' }} />
-            Telefone
+            Ligar para o Suporte
           </button>
 
           <button 
-            onClick={() => handleNotImplemented('Email de Suporte')}
+            onClick={handleEmailSupport}
             style={lastButtonStyle}
             className="settings-btn"
           >
             <AtSign size={20} style={{ marginRight: '1rem', color: 'var(--accent)' }} />
-            Email (Contato Comercial)
+            Enviar E-mail Comercial
           </button>
         </div>
       </div>

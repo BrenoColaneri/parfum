@@ -16,6 +16,18 @@
   --nav-height: 70px;
 }
 
+body.light-theme {
+  --bg-dark: #f8fafc;
+  --bg-gradient: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  
+  --glass-bg: rgba(255, 255, 255, 0.6);
+  --glass-border: rgba(0, 0, 0, 0.1);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.05);
+}
+
+
 * {
   box-sizing: border-box;
   margin: 0;
