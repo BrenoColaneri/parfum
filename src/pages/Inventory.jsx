@@ -153,7 +153,7 @@ const Inventory = () => {
           placeholder="Buscar na coleção..." 
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          style={{ width: '100%', padding: '1rem 1rem 1rem 3rem', borderRadius: '12px', border: '1px solid var(--glass-border)', background: 'var(--glass-bg)', color: 'white' }}
+          style={{ width: '100%', padding: '1rem 1rem 1rem 3rem', borderRadius: '12px', border: '1px solid var(--glass-border)', background: 'var(--glass-bg)', color: 'var(--text-main)', outline: 'none' }}
         />
         <Search size={20} color="var(--text-muted)" style={{ position: 'absolute', left: '1rem', top: '1rem' }} />
       </div>
@@ -169,8 +169,9 @@ const Inventory = () => {
               whiteSpace: 'nowrap',
               border: selectedFilter === cat ? 'none' : '1px solid var(--glass-border)', 
               background: selectedFilter === cat ? 'var(--accent)' : 'var(--glass-bg)', 
-              color: 'white',
-              fontWeight: selectedFilter === cat ? 'bold' : 'normal'
+              color: selectedFilter === cat ? 'white' : 'var(--text-main)',
+              fontWeight: selectedFilter === cat ? 'bold' : 'normal',
+              cursor: 'pointer'
             }}
           >
             {cat}
@@ -194,12 +195,12 @@ const Inventory = () => {
               value={newPerfumeName}
               onChange={(e) => setNewPerfumeName(e.target.value)}
               disabled={isSearchingAI}
-              style={{ flex: 1, padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.2)', color: 'white' }}
+              style={{ flex: 1, padding: '1rem', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--glass-bg)', color: 'var(--text-main)', outline: 'none' }}
             />
             <button 
               onClick={() => fileInputRef.current.click()}
               disabled={isSearchingAI}
-              style={{ padding: '0 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.1)', color: 'white', border: '1px solid rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              style={{ padding: '0 1rem', borderRadius: '8px', background: 'var(--glass-bg)', color: 'var(--text-main)', border: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
               <Camera size={24} />
             </button>
             <input 
@@ -218,7 +219,7 @@ const Inventory = () => {
               value={newPerfumePrice}
               onChange={(e) => setNewPerfumePrice(e.target.value)}
               disabled={isSearchingAI}
-              style={{ width: '100%', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.2)', color: 'white' }}
+              style={{ width: '100%', padding: '1rem', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--glass-bg)', color: 'var(--text-main)', outline: 'none' }}
             />
           </div>
 
@@ -277,7 +278,7 @@ const Inventory = () => {
                   type="text" 
                   value={editingPerfume.brand || ''}
                   onChange={e => setEditingPerfume({...editingPerfume, brand: e.target.value})}
-                  style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', color: 'white' }}
+                  style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-main)', outline: 'none' }}
                 />
               </div>
               <div>
@@ -286,7 +287,7 @@ const Inventory = () => {
                   type="text" 
                   value={editingPerfume.name}
                   onChange={e => setEditingPerfume({...editingPerfume, name: e.target.value})}
-                  style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', color: 'white' }}
+                  style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-main)', outline: 'none' }}
                 />
               </div>
               <div style={{ display: 'flex', gap: '1rem' }}>
@@ -295,7 +296,7 @@ const Inventory = () => {
                   <select 
                     value={editingPerfume.gender || 'Unissex'}
                     onChange={e => setEditingPerfume({...editingPerfume, gender: e.target.value})}
-                    style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', color: 'white' }}
+                    style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-main)', outline: 'none' }}
                   >
                     <option value="Masculino">Masculino</option>
                     <option value="Feminino">Feminino</option>
@@ -308,7 +309,7 @@ const Inventory = () => {
                     type="number" 
                     value={editingPerfume.price_paid || ''}
                     onChange={e => setEditingPerfume({...editingPerfume, price_paid: parseFloat(e.target.value) || 0})}
-                    style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', color: 'white' }}
+                    style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-main)', outline: 'none' }}
                   />
                 </div>
               </div>

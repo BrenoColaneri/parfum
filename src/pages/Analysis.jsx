@@ -203,11 +203,11 @@ const Analysis = () => {
             ))}
           </div>
 
-          <div className="avoid-box" style={{ marginBottom: '1.5rem', background: 'rgba(167, 139, 250, 0.1)', border: '1px solid rgba(167, 139, 250, 0.2)' }}>
-            <Sparkles size={32} color="#a855f7" style={{ flexShrink: 0 }} />
+          <div className="avoid-box" style={{ marginBottom: '1.5rem', background: 'var(--glass-bg)', border: '1px solid var(--accent)' }}>
+            <Sparkles size={32} color="var(--accent)" style={{ flexShrink: 0 }} />
             <div className="avoid-text">
-              <h4 style={{ color: '#c4b5fd' }}>Dica de Aplicação:</h4>
-              <p style={{ color: '#ddd' }}>{recommendation.applicationTip || 'Aplique em pontos de pulsação (pescoço e pulsos) para maior durabilidade.'}</p>
+              <h4 style={{ color: 'var(--text-main)' }}>Dica de Aplicação:</h4>
+              <p style={{ color: 'var(--text-muted)' }}>{recommendation.applicationTip || 'Aplique em pontos de pulsação (pescoço e pulsos) para maior durabilidade.'}</p>
             </div>
           </div>
 
@@ -230,7 +230,8 @@ const Analysis = () => {
               href={`https://www.google.com/search?tbm=shop&q=${encodeURIComponent(perfume.name + ' ' + perfume.brand)}`}
               target="_blank" 
               rel="noreferrer"
-              style={{ flex: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', padding: '1rem', background: '#334155', color: 'white', textDecoration: 'none', borderRadius: '12px', fontSize: '0.9rem', fontWeight: 'bold' }}
+              className="action-btn"
+              style={{ position: 'relative', flex: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', textDecoration: 'none', transform: 'none', width: '100%', left: 0 }}
             >
               <Search size={18} /> Comprar Online
             </a>
@@ -275,7 +276,7 @@ const Analysis = () => {
                   href={`https://www.google.com/search?tbm=shop&q=${encodeURIComponent(disc.name + ' ' + disc.brand)}`}
                   target="_blank" 
                   rel="noreferrer"
-                  style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', width: '100%', marginTop: '1rem', padding: '0.75rem', background: '#334155', color: 'white', textDecoration: 'none', borderRadius: '8px', fontSize: '0.9rem', fontWeight: 'bold' }}
+                  style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', width: '100%', marginTop: '1rem', padding: '0.75rem', background: 'var(--glass-bg)', color: 'var(--text-main)', border: '1px solid var(--accent)', textDecoration: 'none', borderRadius: '8px', fontSize: '0.9rem', fontWeight: 'bold' }}
                 >
                   <Search size={16} /> Pesquisar Preços
                 </a>
