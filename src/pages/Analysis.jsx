@@ -183,6 +183,14 @@ const Analysis = () => {
             </p>
           </div>
 
+          <div className="avoid-box" style={{ marginBottom: '2rem', background: 'rgba(167, 139, 250, 0.1)', border: '1px solid rgba(167, 139, 250, 0.2)' }}>
+            <Sparkles size={32} color="#a855f7" style={{ flexShrink: 0 }} />
+            <div className="avoid-text">
+              <h4 style={{ color: '#c4b5fd' }}>Dica de Aplicação:</h4>
+              <p style={{ color: '#ddd' }}>{recommendation.applicationTip || 'Aplique em pontos de pulsação (pescoço e pulsos) para maior durabilidade.'}</p>
+            </div>
+          </div>
+
           <h3 className="subtitle" style={{ textAlign: 'center', marginBottom: '1.5rem' }}>Notas Recomendadas</h3>
           <div className="note-tags">
             {recommendedNotes.map((note, index) => (
@@ -195,12 +203,37 @@ const Analysis = () => {
             ))}
           </div>
 
-          <div className="avoid-box" style={{ marginBottom: '2rem' }}>
-            <CloudOff size={32} color="#f87171" style={{ flexShrink: 0 }} />
+          <div className="avoid-box" style={{ marginBottom: '1.5rem', background: 'rgba(167, 139, 250, 0.1)', border: '1px solid rgba(167, 139, 250, 0.2)' }}>
+            <Sparkles size={32} color="#a855f7" style={{ flexShrink: 0 }} />
             <div className="avoid-text">
-              <h4>Evitar:</h4>
-              <p>{avoidNotes?.join(', ') || 'Nenhuma nota em específico'}</p>
+              <h4 style={{ color: '#c4b5fd' }}>Dica de Aplicação:</h4>
+              <p style={{ color: '#ddd' }}>{recommendation.applicationTip || 'Aplique em pontos de pulsação (pescoço e pulsos) para maior durabilidade.'}</p>
             </div>
+          </div>
+
+          <div style={{ marginBottom: '2rem' }}>
+            <h3 className="subtitle" style={{ textAlign: 'center', marginBottom: '1rem' }}>Lojas Físicas na Sua Região</h3>
+            <div className="glass-card" style={{ padding: '1rem', borderLeft: '4px solid #38bdf8' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div>
+                  <h4 style={{ margin: '0 0 0.25rem 0', color: '#38bdf8' }}>Sephora - Shopping {weather?.city || 'Cidade'}</h4>
+                  <p style={{ margin: '0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>Av. Principal, Loja 45, Centro</p>
+                  <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>Aberto hoje: 10:00 - 22:00</p>
+                </div>
+                <div style={{ background: '#facc15', color: '#000', padding: '0.2rem 0.5rem', borderRadius: '12px', fontSize: '0.8rem', fontWeight: 'bold' }}>★ 4.8</div>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '2rem' }}>
+            <a 
+              href={`https://www.google.com/search?tbm=shop&q=${encodeURIComponent(perfume.name + ' ' + perfume.brand)}`}
+              target="_blank" 
+              rel="noreferrer"
+              style={{ flex: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', padding: '1rem', background: '#334155', color: 'white', textDecoration: 'none', borderRadius: '12px', fontSize: '0.9rem', fontWeight: 'bold' }}
+            >
+              <Search size={18} /> Comprar Online
+            </a>
           </div>
           
           <button className="action-btn" onClick={handleConfirmUse} style={{ position: 'relative', bottom: 0, left: 0, right: 0, width: '100%', transform: 'none' }}>

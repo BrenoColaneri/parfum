@@ -9,6 +9,7 @@ const Home = () => {
   const navigate = useNavigate();
   const { weather, inventory, user, customOccasions, addCustomOccasion, removeCustomOccasion } = useAppContext();
   const [selectedOccasion, setSelectedOccasion] = useState(null);
+  const [timeOfDay, setTimeOfDay] = useState('Agora');
   const [isThinking, setIsThinking] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [newOccasionText, setNewOccasionText] = useState('');
@@ -75,13 +76,14 @@ const Home = () => {
   const handleRecommend = async () => {
     if (selectedOccasion && inventory.length > 0) {
       setIsThinking(true);
-      const aiResult = await simulateAIRecommendation(weather, selectedOccasion, inventory);
+      const aiResult = await simulateAIRecommendation(weather, selectedOccasion, inventory, timeOfDay);
       setIsThinking(false);
       if (aiResult) {
         const recommendation = {
           ...aiResult,
           weather,
-          occasion: selectedOccasion
+          occasion: selectedOccasion,
+          timeOfDay
         };
         navigate('/analysis', { state: { recommendation } });
       }
@@ -112,6 +114,28 @@ const Home = () => {
           </div>
         </div>
         <CloudRain size={64} style={{ opacity: 0.8 }} />
+      </div>
+
+      <h3 className="section-header">Horário do Evento</h3>
+      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '2rem' }}>
+        <button 
+          onClick={() => setTimeOfDay('Agora')} 
+          style={{ flex: 1, padding: '0.75rem', background: timeOfDay === 'Agora' ? 'var(--accent)' : 'var(--glass-bg)', border: timeOfDay === 'Agora' ? '1px solid var(--accent)' : '1px solid var(--glass-border)', color: timeOfDay === 'Agora' ? 'white' : 'var(--text-main)', borderRadius: '12px', fontWeight: '600' }}
+        >
+          Agora
+        </button>
+        <button 
+          onClick={() => setTimeOfDay('De Dia')} 
+          style={{ flex: 1, padding: '0.75rem', background: timeOfDay === 'De Dia' ? 'var(--accent)' : 'var(--glass-bg)', border: timeOfDay === 'De Dia' ? '1px solid var(--accent)' : '1px solid var(--glass-border)', color: timeOfDay === 'De Dia' ? 'white' : 'var(--text-main)', borderRadius: '12px', fontWeight: '600' }}
+        >
+          De Dia
+        </button>
+        <button 
+          onClick={() => setTimeOfDay('De Noite')} 
+          style={{ flex: 1, padding: '0.75rem', background: timeOfDay === 'De Noite' ? 'var(--accent)' : 'var(--glass-bg)', border: timeOfDay === 'De Noite' ? '1px solid var(--accent)' : '1px solid var(--glass-border)', color: timeOfDay === 'De Noite' ? 'white' : 'var(--text-main)', borderRadius: '12px', fontWeight: '600' }}
+        >
+          De Noite
+        </button>
       </div>
 
       <h3 className="section-header">Qual será a sua ocasião hoje?</h3>

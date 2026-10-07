@@ -13,8 +13,10 @@ const Inventory = () => {
   const [isSearchingAI, setIsSearchingAI] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('Todos');
+  const [editingPerfume, setEditingPerfume] = useState(null);
+  const { editPerfumeBaseInfo } = useAppContext();
 
-  const filterCategories = ['Todos', 'Amadeirado', 'Fresco', 'Cítrico', 'Doce', 'Especiado', 'Floral', 'Couro', 'Aquático'];
+  const filterCategories = ['Todos', 'Masculino', 'Feminino', 'Unissex', 'Amadeirado', 'Fresco', 'Doce', 'Especiado'];
 
   // Multimodal state
   const [imageBase64, setImageBase64] = useState(null);
@@ -103,22 +105,39 @@ const Inventory = () => {
             </span>
           )}
         </div>
-        <span className="inventory-tags" style={{ display: 'inline-block', marginBottom: '0.5rem' }}>{perfume.type}</span>
+        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+          <span className="inventory-tags">{perfume.type}</span>
+          <span className="inventory-tags" style={{ background: 'rgba(168, 85, 247, 0.2)', color: '#d8b4fe' }}>{perfume.gender || 'Unissex'}</span>
+          <span className="inventory-tags" style={{ background: 'rgba(239, 68, 68, 0.2)', color: '#fca5a5' }}>Intensidade: {perfume.intensity || 'Média'}</span>
+        </div>
         {perfume.notes && (
           <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: 0, fontStyle: 'italic' }}>
             Notas: {perfume.notes}
           </p>
         )}
       </div>
-      <button 
-        onClick={(e) => {
-          e.stopPropagation();
-          removePerfume(perfume.id);
-        }} 
-        style={{ background: 'none', border: 'none', color: '#ef4444', padding: '0.5rem', cursor: 'pointer' }}
-      >
-        <Trash2 size={20} />
-      </button>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+        <button 
+          onClick={(e) => {
+            e.stopPropagation();
+            setEditingPerfume(perfume);
+          }} 
+          style={{ background: 'none', border: 'none', color: 'var(--accent)', padding: '0.5rem', cursor: 'pointer' }}
+          title="Editar"
+        >
+          <Sparkles size={20} />
+        </button>
+        <button 
+          onClick={(e) => {
+            e.stopPropagation();
+            removePerfume(perfume.id);
+          }} 
+          style={{ background: 'none', border: 'none', color: '#ef4444', padding: '0.5rem', cursor: 'pointer' }}
+          title="Excluir"
+        >
+          <Trash2 size={20} />
+        </button>
+      </div>
     </div>
   );
 
@@ -236,6 +255,83 @@ const Inventory = () => {
         </div>
       )}
 
+      {editingPerfume && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(5px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 1000, padding: '1rem'
+        }}>
+          <div className="glass-card" style={{ width: '100%', maxWidth: '400px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+              <h3 style={{ margin: 0 }}>Editar Perfume</h3>
+              <button onClick={() => setEditingPerfume(null)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)' }}>
+                <X size={24} />
+              </button>
+            </div>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div>
+                <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Marca</label>
+                <input 
+                  type="text" 
+                  value={editingPerfume.brand || ''}
+                  onChange={e => setEditingPerfume({...editingPerfume, brand: e.target.value})}
+                  style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', color: 'white' }}
+                />
+              </div>
+              <div>
+                <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Nome</label>
+                <input 
+                  type="text" 
+                  value={editingPerfume.name}
+                  onChange={e => setEditingPerfume({...editingPerfume, name: e.target.value})}
+                  style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', color: 'white' }}
+                />
+              </div>
+              <div style={{ display: 'flex', gap: '1rem' }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Gênero</label>
+                  <select 
+                    value={editingPerfume.gender || 'Unissex'}
+                    onChange={e => setEditingPerfume({...editingPerfume, gender: e.target.value})}
+                    style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', color: 'white' }}
+                  >
+                    <option value="Masculino">Masculino</option>
+                    <option value="Feminino">Feminino</option>
+                    <option value="Unissex">Unissex</option>
+                  </select>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Valor Pago</label>
+                  <input 
+                    type="number" 
+                    value={editingPerfume.price_paid || ''}
+                    onChange={e => setEditingPerfume({...editingPerfume, price_paid: parseFloat(e.target.value) || 0})}
+                    style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', color: 'white' }}
+                  />
+                </div>
+              </div>
+              
+              <button 
+                onClick={async () => {
+                  await editPerfumeBaseInfo(editingPerfume.id, {
+                    name: editingPerfume.name,
+                    brand: editingPerfume.brand,
+                    gender: editingPerfume.gender,
+                    price_paid: editingPerfume.price_paid
+                  });
+                  setEditingPerfume(null);
+                }}
+                style={{ background: 'var(--accent)', color: 'white', border: 'none', padding: '1rem', borderRadius: '12px', fontWeight: 'bold', marginTop: '0.5rem' }}
+              >
+                Salvar Alterações
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="inventory-list">
         {inventory.length === 0 ? (
           <p style={{ textAlign: 'center', color: 'var(--text-muted)', marginTop: '2rem' }}>Sua biblioteria está vazia.</p>
@@ -245,6 +341,12 @@ const Inventory = () => {
               .filter(p => {
                 const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) || (p.brand && p.brand.toLowerCase().includes(searchTerm.toLowerCase()));
                 if (selectedFilter === 'Todos') return matchesSearch;
+                
+                // Advanced filtering
+                if (['Masculino', 'Feminino', 'Unissex'].includes(selectedFilter)) {
+                   return matchesSearch && p.gender === selectedFilter;
+                }
+                
                 return matchesSearch && p.type && p.type.toLowerCase().includes(selectedFilter.toLowerCase());
               })
               .sort((a, b) => a.name.localeCompare(b.name))

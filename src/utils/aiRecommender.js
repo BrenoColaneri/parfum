@@ -5,7 +5,7 @@ const genAI = import.meta.env.VITE_GEMINI_API_KEY
   ? new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY)
   : null;
 
-export const simulateAIRecommendation = async (weather, occasion, inventory) => {
+export const simulateAIRecommendation = async (weather, occasion, inventory, timeOfDay = 'Agora') => {
   if (!inventory || inventory.length === 0) return null;
 
   // Graceful fallback to Mock if no key
@@ -23,10 +23,11 @@ export const simulateAIRecommendation = async (weather, occasion, inventory) => 
 
         resolve({
           perfume: recommended,
-          rationale: `Simulação: O clima está ${weather.temp}°C e você vai para um(a) ${occasion}. O ${recommended.name} é ideal pois sua característica ${recommended.type} funciona perfeitamente nesse cenário.`,
+          rationale: `Simulação: O clima está ${weather.temp}°C e você vai para um(a) ${occasion} (${timeOfDay}). O ${recommended.name} é ideal pois sua característica ${recommended.type} funciona perfeitamente nesse cenário.`,
           recommendedNotes: isWarm ? ['Cítricos', 'Aquáticos'] : ['Madeiras', 'Especiarias', 'Âmbar'],
           avoidNotes: isWarm ? ['Couro', 'Baunilha Pesada'] : ['Notas extremamente oceânicas'],
-          vibe: isWarm ? 'Refrescante' : 'Aconchegante'
+          vibe: isWarm ? 'Refrescante' : 'Aconchegante',
+          applicationTip: isWarm ? 'Aplique 3 a 5 borrifadas no pescoço e braços.' : 'Aplique 2 borrifadas no pescoço. O calor corporal ajuda a projetar.'
         });
       }, 1500);
     });
@@ -41,6 +42,7 @@ O usuário quer saber qual perfume da sua coleção usar.
 
 Dados do Clima: ${weather.temp}°C, ${weather.condition}.
 Ocasião: ${occasion}.
+Horário: ${timeOfDay}.
 
 Inventário do usuário:
 ${inventory.map(p => `- ${p.name} (Tipo: ${p.type})`).join('\n')}
@@ -51,7 +53,8 @@ Por favor, escolha o melhor perfume do inventário acima e retorne EXATAMENTE um
   "rationale": "Sua explicação poética e especializada do porquê de 2 a 3 frases",
   "recommendedNotes": ["Nota1", "Nota2", "Nota3"],
   "avoidNotes": ["Nota1", "Nota2"],
-  "vibe": "Uma palavra definindo a vibe (ex: Sedutor, Refrescante)"
+  "vibe": "Uma palavra definindo a vibe (ex: Sedutor, Refrescante)",
+  "applicationTip": "Uma dica de aplicação. Ex: Dê 4 borrifadas (pescoço e pulsos) para maior projeção."
 }
 `;
 
@@ -74,7 +77,8 @@ Por favor, escolha o melhor perfume do inventário acima e retorne EXATAMENTE um
       rationale: parsedData.rationale,
       recommendedNotes: parsedData.recommendedNotes,
       avoidNotes: parsedData.avoidNotes,
-      vibe: parsedData.vibe
+      vibe: parsedData.vibe,
+      applicationTip: parsedData.applicationTip || "Aplique com moderação."
     };
   } catch (error) {
     console.error("Gemini AI Error:", error);
@@ -85,7 +89,8 @@ Por favor, escolha o melhor perfume do inventário acima e retorne EXATAMENTE um
       rationale: `Tivemos um problema de conexão com o oráculo (IA). Sugiro o clássico ${recommended.name} para não errar hoje.`,
       recommendedNotes: ['Seguro', 'Clássico'],
       avoidNotes: [],
-      vibe: 'Garantido'
+      vibe: 'Garantido',
+      applicationTip: 'Dê 3 borrifadas na região do pescoço.'
     };
   }
 };
@@ -96,6 +101,8 @@ export const enrichPerfumeData = async ({ perfumeName, imageBase64, imageMimeTyp
     return {
       name: perfumeName || "Perfume da Foto",
       brand: "Desconhecida",
+      gender: "Unissex",
+      intensity: "Moderada",
       concentration: "EDP",
       type: "Desconhecido",
       icon: "Wind",
@@ -114,6 +121,8 @@ Por favor, analise as informações (texto e/ou imagem do frasco), identifique c
 {
   "name": "Nome correto e oficial do perfume",
   "brand": "A marca de design ou perfumaria (Ex: Dior, Chanel, Tom Ford)",
+  "gender": "Apenas uma destas opções: Masculino, Feminino, Unissex",
+  "intensity": "Apenas uma destas opções: Leve, Moderada, Forte",
   "concentration": "A concentração PADRONIZADA usando SOMENTE uma das seguintes opções: EDC, EDT, EDP, Parfum, Extrait",
   "type": "A Família Olfativa oficial (Ex: Amadeirado Especiado, Cítrico Fresco)",
   "notes": "Uma string curta com as 3 principais notas (ex: Bergamota, Pimenta, Cedro)",
@@ -158,6 +167,8 @@ Por favor, analise as informações (texto e/ou imagem do frasco), identifique c
     return {
       name: perfumeName || "Erro na Foto",
       brand: "Desconhecida",
+      gender: "Unissex",
+      intensity: "Moderada",
       concentration: "EDP",
       type: "Erro na API",
       icon: "Wind",
@@ -192,7 +203,10 @@ export const fetchPerfumeDetails = async (perfumeName) => {
           },
           similar: ["Blue de Chanel", "Dior Sauvage"],
           perfumer: "Jacques Polge",
-          releaseYear: "2010"
+          releaseYear: "2010",
+          localStores: [
+            { name: "Perfumaria Sephora - Shopping Cidade", address: "Av. Principal, 1000 - Loja 45", rating: "4.8", hours: "10:00 - 22:00" }
+          ]
         });
       }, 1500);
     });
@@ -230,7 +244,10 @@ IMPORTANTE: Para as notas (pyramid), inclua sempre um EMOJI representando o ingr
   },
   "similar": ["Nome do Perfume 1", "Nome do Perfume 2", "Nome do Perfume 3"],
   "perfumer": "Nome do Perfumista",
-  "releaseYear": "Ano de lançamento (ex: 2010)"
+  "releaseYear": "Ano de lançamento (ex: 2010)",
+  "localStores": [
+    { "name": "Nome de uma loja física real famosa na capital que vende perfumes", "address": "Rua fictícia com número", "rating": "4.9", "hours": "10:00 - 22:00" }
+  ]
 }
 `;
 
