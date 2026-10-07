@@ -30,6 +30,28 @@ const Settings = () => {
     alert('Tema alterado! (Simulação visual ativa)');
   };
 
+  const buttonStyle = {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    width: '100%',
+    background: 'transparent', 
+    color: 'var(--text-primary)', 
+    padding: '1.2rem 1rem', 
+    border: 'none',
+    borderBottom: '1px solid rgba(255,255,255,0.05)', 
+    borderRadius: '0', 
+    boxShadow: 'none',
+    cursor: 'pointer',
+    fontSize: '1rem',
+    textAlign: 'left'
+  };
+
+  const lastButtonStyle = {
+    ...buttonStyle,
+    borderBottom: 'none'
+  };
+
   return (
     <div className="page-container" style={{ paddingBottom: '100px' }}>
       <header className="page-header" style={{ marginBottom: '2rem' }}>
@@ -43,8 +65,8 @@ const Settings = () => {
         <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '0', padding: '0', overflow: 'hidden' }}>
           <button 
             onClick={() => handleNotImplemented('Mudar Senha')}
-            className="action-button" 
-            style={{ justifyContent: 'flex-start', background: 'transparent', color: 'var(--text-primary)', padding: '1.2rem 1rem', borderBottom: '1px solid rgba(255,255,255,0.05)', borderRadius: '0', boxShadow: 'none' }}
+            style={buttonStyle}
+            className="settings-btn"
           >
             <Key size={20} style={{ marginRight: '1rem', color: 'var(--accent)' }} />
             Mudar Senha
@@ -52,8 +74,8 @@ const Settings = () => {
           
           <button 
             onClick={() => handleNotImplemented('Mudar Email')}
-            className="action-button" 
-            style={{ justifyContent: 'flex-start', background: 'transparent', color: 'var(--text-primary)', padding: '1.2rem 1rem', borderRadius: '0', boxShadow: 'none' }}
+            style={lastButtonStyle}
+            className="settings-btn"
           >
             <Mail size={20} style={{ marginRight: '1rem', color: 'var(--accent)' }} />
             Mudar Email
@@ -64,11 +86,11 @@ const Settings = () => {
       <div className="settings-section">
         <h2 style={{ fontSize: '1.2rem', color: 'var(--accent)', marginBottom: '1rem', marginTop: '2rem' }}>Preferências</h2>
         
-        <div className="glass-card" style={{ padding: '0', overflow: 'hidden' }}>
+        <div className="glass-card" style={{ padding: '0', overflow: 'hidden', display: 'flex' }}>
           <button 
             onClick={handleThemeToggle}
-            className="action-button" 
-            style={{ justifyContent: 'flex-start', background: 'transparent', color: 'var(--text-primary)', padding: '1.2rem 1rem', borderRadius: '0', boxShadow: 'none' }}
+            style={lastButtonStyle}
+            className="settings-btn"
           >
             <Moon size={20} style={{ marginRight: '1rem', color: 'var(--accent)' }} />
             Alterar Tema
@@ -82,8 +104,8 @@ const Settings = () => {
         <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '0', padding: '0', overflow: 'hidden' }}>
           <button 
             onClick={() => handleNotImplemented('Mensagem de Contato')}
-            className="action-button" 
-            style={{ justifyContent: 'flex-start', background: 'transparent', color: 'var(--text-primary)', padding: '1.2rem 1rem', borderBottom: '1px solid rgba(255,255,255,0.05)', borderRadius: '0', boxShadow: 'none' }}
+            style={buttonStyle}
+            className="settings-btn"
           >
             <MessageSquare size={20} style={{ marginRight: '1rem', color: 'var(--accent)' }} />
             Contato via Mensagem
@@ -91,8 +113,8 @@ const Settings = () => {
 
           <button 
             onClick={() => handleNotImplemented('Telefone de Suporte')}
-            className="action-button" 
-            style={{ justifyContent: 'flex-start', background: 'transparent', color: 'var(--text-primary)', padding: '1.2rem 1rem', borderBottom: '1px solid rgba(255,255,255,0.05)', borderRadius: '0', boxShadow: 'none' }}
+            style={buttonStyle}
+            className="settings-btn"
           >
             <Phone size={20} style={{ marginRight: '1rem', color: 'var(--accent)' }} />
             Telefone
@@ -100,8 +122,8 @@ const Settings = () => {
 
           <button 
             onClick={() => handleNotImplemented('Email de Suporte')}
-            className="action-button" 
-            style={{ justifyContent: 'flex-start', background: 'transparent', color: 'var(--text-primary)', padding: '1.2rem 1rem', borderRadius: '0', boxShadow: 'none' }}
+            style={lastButtonStyle}
+            className="settings-btn"
           >
             <AtSign size={20} style={{ marginRight: '1rem', color: 'var(--accent)' }} />
             Email (Contato Comercial)
