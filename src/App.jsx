@@ -18,6 +18,7 @@ import Wishlist from './pages/Wishlist';
 import Analysis from './pages/Analysis';
 import PerfumeDetails from './pages/PerfumeDetails';
 import History from './pages/History';
+import Settings from './pages/Settings';
 import BottomNav from './components/BottomNav';
 import FloatingChat from './components/FloatingChat';
 
@@ -48,6 +49,7 @@ function App() {
           <Route path="/wishlist" element={<PrivateRoute><Wishlist /></PrivateRoute>} />
           <Route path="/analysis" element={<PrivateRoute><Analysis /></PrivateRoute>} />
           <Route path="/history" element={<PrivateRoute><History /></PrivateRoute>} />
+          <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
           <Route path="/perfume/:id" element={<PrivateRoute><PerfumeDetails /></PrivateRoute>} />
         </Routes>
         

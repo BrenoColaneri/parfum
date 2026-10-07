@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { Home, Search, Heart, CalendarDays, Sparkles } from 'lucide-react';
+import { Home, Search, Heart, CalendarDays, Settings } from 'lucide-react';
 
 const BottomNav = () => {
   const location = useLocation();
@@ -34,14 +34,14 @@ const BottomNav = () => {
         className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
       >
         <CalendarDays size={24} />
-        <span>Perfil</span>
+        <span>Histórico</span>
       </NavLink>
       <NavLink 
-        to="/analysis" 
+        to="/settings" 
         className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
       >
-        <Sparkles size={24} />
-        <span>Ferramentas</span>
+        <Settings size={24} />
+        <span>Ajustes</span>
       </NavLink>
     </nav>
   );
