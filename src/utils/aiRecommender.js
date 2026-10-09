@@ -148,8 +148,8 @@ Por favor, analise as informações (texto e/ou imagem do frasco), identifique c
       const response = await result.response;
       text = response.text().trim();
     } catch (liteError) {
-      console.warn("Fallback to gemini-3.5-flash in enrichPerfumeData due to:", liteError.message);
-      const modelPro = genAI.getGenerativeModel({ model: "gemini-3.5-flash" });
+      console.warn("Fallback to gemini-1.5-flash in enrichPerfumeData due to:", liteError.message);
+      const modelPro = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
       const result = await modelPro.generateContent(payload);
       const response = await result.response;
       text = response.text().trim();

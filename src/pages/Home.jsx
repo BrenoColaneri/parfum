@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import * as LucideIcons from 'lucide-react';
-import { CloudRain, Thermometer, Droplets, Briefcase, Heart, Dumbbell, GlassWater, PartyPopper, Utensils, Coffee, Music, Sun, Moon, Plus, X, Loader2 } from 'lucide-react';
+import { CloudRain, Thermometer, Droplets, Briefcase, Heart, Dumbbell, GlassWater, PartyPopper, Utensils, Coffee, Music, Sun, Moon, Plus, X, Loader2, Sparkles } from 'lucide-react';
 import { useAppContext } from '../context/AppProvider';
 import { simulateAIRecommendation, formatCustomOccasion } from '../utils/aiRecommender';
 
@@ -179,6 +179,15 @@ const Home = () => {
           </div>
           <p>Adicionar</p>
         </div>
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '2rem' }}>
+        <button 
+          onClick={() => navigate('/analysis')}
+          style={{ background: 'transparent', color: 'var(--accent)', border: '1px solid var(--accent)', padding: '0.75rem 1.5rem', borderRadius: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+        >
+          <Sparkles size={18} /> Explorar Ferramentas de IA
+        </button>
       </div>
 
       <button 

@@ -394,3 +394,10 @@ h1, h2, h3 {
   font-size: 0.8rem;
   color: var(--text-muted);
 }
+
+.settings-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+.light-theme .settings-btn:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
