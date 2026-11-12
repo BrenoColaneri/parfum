@@ -1,23 +1,27 @@
 import React, { useState, useMemo } from 'react';
-import { CalendarDays, BarChart3, Trophy, PieChart as PieChartIcon, Wallet, Trash2 } from 'lucide-react';
+import { CalendarDays, BarChart3, Trophy, PieChart as PieChartIcon, Wallet, Trash2, PlusCircle } from 'lucide-react';
 import { useAppContext } from '../context/AppProvider';
 import { useToast } from '../context/ToastContext';
 import { useNavigate } from 'react-router-dom';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 
 const History = () => {
-  const { sotdHistory, inventory, removeSotd } = useAppContext();
-  const { toastInfo, showConfirm } = useToast();
+  const { sotdHistory, inventory, recordSotd, removeSotd } = useAppContext();
+  const { toastSuccess, toastWarning, toastError, toastInfo, showConfirm } = useToast();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('historico');
 
-  // Group history by date
+  const todayStr = new Date().toISOString().split('T')[0];
+  const [selectedPerfumeId, setSelectedPerfumeId] = useState('');
+  const [selectedDate, setSelectedDate] = useState(todayStr);
+
+  // Agrupa histórico por data (apenas perfumes válidos presentes no inventário)
   const groupedHistory = useMemo(() => sotdHistory.reduce((acc, curr) => {
-    if (!acc[curr.date]) {
-      acc[curr.date] = [];
-    }
     const perfume = inventory.find(p => p.id === curr.perfume_id);
     if (perfume) {
+      if (!acc[curr.date]) {
+        acc[curr.date] = [];
+      }
       acc[curr.date].push({ perfume, sotd_id: curr.id });
     }
     return acc;
@@ -26,8 +30,29 @@ const History = () => {
   const sortedDates = Object.keys(groupedHistory).sort((a, b) => new Date(b) - new Date(a));
 
   const formatDate = (dateStr) => {
-    const d = new Date(dateStr + 'T12:00:00'); // avoid timezone offset issues
+    const d = new Date(dateStr + 'T12:00:00');
     return d.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
+  };
+
+  const handleManualRecordSotd = async (e) => {
+    e.preventDefault();
+    if (!selectedPerfumeId) {
+      toastError('Selecione um perfume da sua coleção para registrar.');
+      return;
+    }
+    if (!selectedDate) {
+      toastError('Informe a data do uso.');
+      return;
+    }
+
+    const res = await recordSotd(selectedPerfumeId, selectedDate);
+    if (res?.duplicate) {
+      toastWarning(res.message || 'Este perfume já foi registrado nesta data.');
+    } else if (res?.success) {
+      const perf = inventory.find(p => p.id === selectedPerfumeId);
+      toastSuccess(`Uso de "${perf?.name || 'Perfume'}" registrado em ${selectedDate.split('-').reverse().join('/')}!`);
+      setSelectedPerfumeId('');
+    }
   };
 
   // --- STATS LOGIC ---
@@ -42,36 +67,38 @@ const History = () => {
       .map(([id, count]) => {
         const perf = inventory.find(p => p.id === id);
         return { perfume: perf, count };
-      }).filter(item => item.perfume); // Filter out deleted perfumes
+      }).filter(item => item.perfume);
   }, [sotdHistory, inventory]);
 
   const familyData = useMemo(() => {
     const counts = {};
     inventory.forEach(p => {
-      // Simplified family grouping
-      let family = "Outros";
-      if (p.type.includes("Amadeirado")) family = "Amadeirado";
-      else if (p.type.includes("Fresco") || p.type.includes("Cítrico") || p.type.includes("Aquático")) family = "Fresco";
-      else if (p.type.includes("Oriental") || p.type.includes("Especiado") || p.type.includes("Quente")) family = "Oriental";
-      else if (p.type.includes("Floral")) family = "Floral";
-      else if (p.type.includes("Couro")) family = "Couro";
-      
+      const typeStr = (p.type || '').toLowerCase();
+      let family = 'Outros';
+      if (typeStr.includes('amadeirado')) family = 'Amadeirado';
+      else if (typeStr.includes('fresco') || typeStr.includes('cítrico') || typeStr.includes('citrico') || typeStr.includes('aquático') || typeStr.includes('aquatico')) family = 'Fresco';
+      else if (typeStr.includes('oriental') || typeStr.includes('especiado') || typeStr.includes('quente') || typeStr.includes('âmbar') || typeStr.includes('gourmand') || typeStr.includes('doce')) family = 'Oriental';
+      else if (typeStr.includes('floral')) family = 'Floral';
+      else if (typeStr.includes('aromático') || typeStr.includes('aromatico') || typeStr.includes('fougère')) family = 'Aromático';
+      else if (typeStr.includes('couro') || typeStr.includes('chypre') || typeStr.includes('chipre')) family = 'Couro / Chipre';
+
       counts[family] = (counts[family] || 0) + 1;
     });
 
     const colors = {
-      "Amadeirado": "#4ade80",
-      "Fresco": "#38bdf8",
-      "Oriental": "#f97316",
-      "Floral": "#f472b6",
-      "Couro": "#a16207",
-      "Outros": "#94a3b8"
+      'Amadeirado': '#4ade80',
+      'Fresco': '#38bdf8',
+      'Oriental': '#f97316',
+      'Floral': '#f472b6',
+      'Aromático': '#8b5cf6',
+      'Couro / Chipre': '#a16207',
+      'Outros': '#94a3b8'
     };
 
     return Object.entries(counts).map(([name, value]) => ({
       name,
       value,
-      color: colors[name] || "#94a3b8"
+      color: colors[name] || '#94a3b8'
     }));
   }, [inventory]);
 
@@ -99,15 +126,15 @@ const History = () => {
       </div>
 
       <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.5rem' }}>
-        <button 
+        <button
           onClick={() => setActiveTab('historico')}
-          style={{ flex: 1, padding: '0.5rem', background: 'none', border: 'none', color: activeTab === 'historico' ? 'var(--accent)' : 'var(--text-muted)', fontWeight: activeTab === 'historico' ? 'bold' : 'normal', borderBottom: activeTab === 'historico' ? '2px solid var(--accent)' : 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+          style={{ flex: 1, padding: '0.5rem', background: 'none', border: 'none', color: activeTab === 'historico' ? 'var(--accent)' : 'var(--text-muted)', fontWeight: activeTab === 'historico' ? 'bold' : 'normal', borderBottom: activeTab === 'historico' ? '2px solid var(--accent)' : 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', cursor: 'pointer' }}
         >
           <CalendarDays size={18} /> Histórico
         </button>
-        <button 
+        <button
           onClick={() => setActiveTab('estatisticas')}
-          style={{ flex: 1, padding: '0.5rem', background: 'none', border: 'none', color: activeTab === 'estatisticas' ? 'var(--accent)' : 'var(--text-muted)', fontWeight: activeTab === 'estatisticas' ? 'bold' : 'normal', borderBottom: activeTab === 'estatisticas' ? '2px solid var(--accent)' : 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+          style={{ flex: 1, padding: '0.5rem', background: 'none', border: 'none', color: activeTab === 'estatisticas' ? 'var(--accent)' : 'var(--text-muted)', fontWeight: activeTab === 'estatisticas' ? 'bold' : 'normal', borderBottom: activeTab === 'estatisticas' ? '2px solid var(--accent)' : 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', cursor: 'pointer' }}
         >
           <BarChart3 size={18} /> Estatísticas
         </button>
@@ -115,14 +142,47 @@ const History = () => {
 
       {activeTab === 'historico' && (
         <>
-          <p className="subtitle" style={{ marginBottom: '2rem' }}>
-            Sua jornada olfativa. Veja quais perfumes marcaram seus dias.
+          <p className="subtitle" style={{ marginBottom: '1.25rem' }}>
+            Sua jornada olfativa. Registre e acompanhe quais perfumes marcaram seus dias.
           </p>
 
+          {/* Registro Rápido de Perfume do Dia (SOTD) */}
+          {inventory.length > 0 && (
+            <form onSubmit={handleManualRecordSotd} className="glass-card" style={{ marginBottom: '2rem', padding: '1.25rem', border: '1px solid var(--glass-border)' }}>
+              <h4 style={{ margin: '0 0 0.75rem 0', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-main)' }}>
+                <PlusCircle size={18} color="var(--accent)" /> Registrar Perfume do Dia (SOTD)
+              </h4>
+              <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                <select
+                  value={selectedPerfumeId}
+                  onChange={(e) => setSelectedPerfumeId(e.target.value)}
+                  style={{ flex: 2, minWidth: '180px', padding: '0.75rem', borderRadius: '8px', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-main)', outline: 'none' }}
+                >
+                  <option value="">Selecione um perfume da coleção...</option>
+                  {inventory.map(p => (
+                    <option key={p.id} value={p.id}>{p.name} ({p.brand})</option>
+                  ))}
+                </select>
+                <input
+                  type="date"
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  style={{ flex: 1, minWidth: '140px', padding: '0.75rem', borderRadius: '8px', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-main)', outline: 'none' }}
+                />
+                <button
+                  type="submit"
+                  style={{ padding: '0.75rem 1.25rem', borderRadius: '8px', background: 'var(--accent)', color: 'white', border: 'none', fontWeight: '600', cursor: 'pointer' }}
+                >
+                  Registrar Uso
+                </button>
+              </div>
+            </form>
+          )}
+
           {sortedDates.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '3rem 0', color: 'var(--text-muted)' }}>
-              <p>Nenhum perfume registrado ainda.</p>
-              <p style={{ fontSize: '0.8rem' }}>Acesse a página de um perfume na sua Biblioteria e clique em "Estou usando hoje".</p>
+            <div className="glass-card" style={{ textAlign: 'center', padding: '3rem 1.5rem', color: 'var(--text-muted)' }}>
+              <p style={{ color: 'var(--text-main)', marginBottom: '0.5rem' }}>Nenhum perfume registrado ainda.</p>
+              <p style={{ fontSize: '0.85rem' }}>Selecione um perfume acima ou clique em "Estou usando hoje" na página de detalhes.</p>
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
@@ -136,13 +196,14 @@ const History = () => {
                       <div key={idx} className="glass-card" style={{ display: 'flex', alignItems: 'center', padding: '1rem' }}>
                         <div style={{ flex: 1, cursor: 'pointer' }} onClick={() => navigate(`/perfume/${item.perfume.id}`)}>
                           {item.perfume.brand && <span style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--accent)', fontWeight: 'bold' }}>{item.perfume.brand}</span>}
-                          <h4 style={{ fontSize: '1.1rem', margin: 0 }}>{item.perfume.name}</h4>
+                          <h4 style={{ fontSize: '1.1rem', margin: 0, color: 'var(--text-main)' }}>{item.perfume.name}</h4>
                           <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{item.perfume.type}</span>
                         </div>
-                        <button 
-                          onClick={() => handleDeleteSotd(item.sotd_id, item.perfume.name)} 
+                        <button
+                          onClick={() => handleDeleteSotd(item.sotd_id, item.perfume.name)}
                           style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '0.5rem' }}
                           title="Remover do histórico"
+                          aria-label={`Remover ${item.perfume.name} do histórico`}
                         >
                           <Trash2 size={20} />
                         </button>
@@ -158,15 +219,15 @@ const History = () => {
 
       {activeTab === 'estatisticas' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          
+
           <div style={{ display: 'flex', gap: '1rem' }}>
             <div className="glass-card" style={{ flex: 1, textAlign: 'center', padding: '1rem' }}>
-              <div style={{ fontSize: '2rem', fontWeight: 'bold', color: 'white' }}>{inventory.length}</div>
+              <div style={{ fontSize: '2rem', fontWeight: 'bold', color: 'var(--text-main)' }}>{inventory.length}</div>
               <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Frascos na Coleção</div>
             </div>
             <div className="glass-card" style={{ flex: 1, textAlign: 'center', padding: '1rem' }}>
-              <div style={{ fontSize: '2rem', fontWeight: 'bold', color: 'white' }}>{sotdHistory.length}</div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Dias Registrados</div>
+              <div style={{ fontSize: '2rem', fontWeight: 'bold', color: 'var(--text-main)' }}>{sotdHistory.length}</div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Registros de Uso</div>
             </div>
           </div>
 
@@ -176,9 +237,14 @@ const History = () => {
             </h3>
             <div style={{ textAlign: 'center', padding: '0.5rem 0' }}>
               <div style={{ fontSize: '0.75rem', color: '#86efac', marginBottom: '0.25rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Valor Total da Coleção</div>
-              <div style={{ fontSize: '2.2rem', fontWeight: 'bold', color: 'white', textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>
+              <div style={{ fontSize: '2.2rem', fontWeight: 'bold', color: 'var(--text-main)', textShadow: '0 2px 10px rgba(0,0,0,0.3)' }}>
                 R$ {totalInvested.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </div>
+              {inventory.length > 0 && (
+                <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.35rem' }}>
+                  Ticket médio por frasco: R$ {(totalInvested / inventory.length).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </div>
+              )}
             </div>
           </div>
 
@@ -187,7 +253,7 @@ const History = () => {
               <Trophy size={20} color="#fcd34d" /> Top 3 Mais Usados
             </h3>
             {topUsed.length === 0 ? (
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Sem dados suficientes.</p>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Sem dados suficientes. Registre seus perfumes do dia para ver o ranking.</p>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 {topUsed.map((item, idx) => (
@@ -196,10 +262,10 @@ const History = () => {
                       {idx + 1}
                     </div>
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>{item.perfume.name}</div>
+                      <div style={{ fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--text-main)' }}>{item.perfume.name}</div>
                       <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{item.perfume.brand}</div>
                     </div>
-                    <div style={{ fontSize: '0.8rem', background: 'var(--accent)', padding: '0.2rem 0.5rem', borderRadius: '12px', fontWeight: 'bold' }}>
+                    <div style={{ fontSize: '0.8rem', background: 'var(--accent)', color: 'white', padding: '0.2rem 0.6rem', borderRadius: '12px', fontWeight: 'bold' }}>
                       {item.count}x
                     </div>
                   </div>
@@ -210,7 +276,7 @@ const History = () => {
 
           <div className="glass-card">
             <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem', fontSize: '1.1rem' }}>
-              <PieChartIcon size={20} color="#a855f7" /> Perfil de Famílias
+              <PieChartIcon size={20} color="#a855f7" /> Perfil de Famílias Olfativas
             </h3>
             {familyData.length === 0 ? (
               <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Sem perfumes na coleção.</p>
@@ -231,7 +297,7 @@ const History = () => {
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
-                    <Tooltip 
+                    <Tooltip
                       contentStyle={{ background: 'rgba(15, 23, 42, 0.9)', border: '1px solid var(--accent)', borderRadius: '8px', color: 'white' }}
                       itemStyle={{ color: 'white' }}
                     />

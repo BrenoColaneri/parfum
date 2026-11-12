@@ -37,13 +37,14 @@ const Analysis = () => {
 
   const { perfume, rationale, recommendedNotes = [], avoidNotes = [], occasion, weather } = recommendation || {};
 
-  const renderIcon = (type) => {
-    if (type.includes('Fresco')) return <Droplet size={80} color="#38bdf8" style={{ marginBottom: '1rem' }} />;
-    if (type.includes('Amadeirado')) return <Trees size={80} color="#4ade80" style={{ marginBottom: '1rem' }} />;
+  const renderIcon = (type = '') => {
+    const safeType = type || '';
+    if (safeType.includes('Fresco') || safeType.includes('Cítrico')) return <Droplet size={80} color="#38bdf8" style={{ marginBottom: '1rem' }} />;
+    if (safeType.includes('Amadeirado')) return <Trees size={80} color="#4ade80" style={{ marginBottom: '1rem' }} />;
     return <Flame size={80} color="#f97316" style={{ marginBottom: '1rem' }} />;
   };
 
-  const renderSmallIcon = (noteName) => {
+  const renderSmallIcon = (noteName = '') => {
     if (noteName.includes('Limão') || noteName.includes('Cítrico')) return <Droplet size={20} color="#38bdf8" />;
     if (noteName.includes('Madeira') || noteName.includes('Vetiver')) return <Trees size={20} color="#4ade80" />;
     return <Flame size={20} color="#fbbf24" />;
@@ -62,19 +63,25 @@ const Analysis = () => {
   }, [activeTab, inventory, discoveries.length]);
 
   const [layeringBaseId, setLayeringBaseId] = useState('');
+  const [layeringSecondId, setLayeringSecondId] = useState('');
 
   const handleGenerateLayering = async () => {
     setIsLayering(true);
     const basePerfume = layeringBaseId ? inventory.find(p => p.id === layeringBaseId) : null;
-    const result = await recommendLayering(inventory, basePerfume);
+    const secondPerfume = layeringSecondId ? inventory.find(p => p.id === layeringSecondId) : null;
+    const result = await recommendLayering(inventory, basePerfume, secondPerfume);
     setLayeringResult(result);
     setIsLayering(false);
   };
 
   const handleConfirmUse = async () => {
     const todayStr = new Date().toISOString().split('T')[0];
-    await recordSotd(perfume.id, todayStr);
-    toastSuccess(`"${perfume.name}" registrado como seu Perfume do Dia!`);
+    const res = await recordSotd(perfume.id, todayStr);
+    if (res?.duplicate) {
+      toastSuccess(`"${perfume.name}" já está registrado no seu Diário de hoje!`);
+    } else {
+      toastSuccess(`"${perfume.name}" registrado como seu Perfume do Dia!`);
+    }
     navigate('/history');
   };
 
@@ -304,15 +311,31 @@ const Analysis = () => {
           <div className="glass-card" style={{ marginBottom: '1rem', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <div>
               <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>
-                Selecione a Base (opcional)
+                1º Perfume — Base (opcional)
               </label>
               <select 
                 value={layeringBaseId}
                 onChange={(e) => setLayeringBaseId(e.target.value)}
                 style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }}
               >
-                <option value="">Deixe a IA escolher as duas...</option>
+                <option value="">Deixe a IA escolher...</option>
                 {inventory.map(p => (
+                  <option key={p.id} value={p.id}>{p.name} ({p.brand})</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>
+                2º Perfume — Topo / Complemento (opcional)
+              </label>
+              <select 
+                value={layeringSecondId}
+                onChange={(e) => setLayeringSecondId(e.target.value)}
+                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', color: 'white', outline: 'none' }}
+              >
+                <option value="">Deixe a IA escolher o melhor par...</option>
+                {inventory.filter(p => p.id !== layeringBaseId).map(p => (
                   <option key={p.id} value={p.id}>{p.name} ({p.brand})</option>
                 ))}
               </select>
@@ -321,7 +344,7 @@ const Analysis = () => {
             <button 
               onClick={handleGenerateLayering}
               disabled={isLayering || inventory.length < 2}
-              style={{ background: '#a855f7', color: 'white', border: 'none', padding: '1rem', borderRadius: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', opacity: isLayering || inventory.length < 2 ? 0.5 : 1 }}
+              style={{ background: '#a855f7', color: 'white', border: 'none', padding: '1rem', borderRadius: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', opacity: isLayering || inventory.length < 2 ? 0.5 : 1, cursor: 'pointer' }}
             >
               {isLayering ? <><Loader2 size={18} className="lucide-spin" /> Misturando...</> : 'Gerar Combinação'}
             </button>
@@ -335,9 +358,14 @@ const Analysis = () => {
             </div>
           ) : layeringResult ? (
             <div className="glass-card" style={{ border: '2px dashed #a855f7', background: 'rgba(168, 85, 247, 0.05)', textAlign: 'center' }}>
-              <h4 style={{ color: '#d8b4fe', fontSize: '1.4rem', margin: '0 0 1.5rem 0', textTransform: 'uppercase', letterSpacing: '2px' }}>
+              <h4 style={{ color: '#d8b4fe', fontSize: '1.4rem', margin: '0 0 0.5rem 0', textTransform: 'uppercase', letterSpacing: '2px' }}>
                 {layeringResult.mix_name}
               </h4>
+              {layeringResult.compatibility && (
+                <div style={{ display: 'inline-block', padding: '0.25rem 0.75rem', borderRadius: '12px', background: 'rgba(168, 85, 247, 0.25)', color: '#e9d5ff', fontSize: '0.8rem', fontWeight: 'bold', marginBottom: '1.25rem' }}>
+                  Harmonia Olfativa: {layeringResult.compatibility}
+                </div>
+              )}
               
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
                 <div style={{ flex: 1, padding: '1rem', background: 'rgba(0,0,0,0.4)', borderRadius: '12px' }}>
@@ -351,12 +379,27 @@ const Analysis = () => {
                 </div>
               </div>
 
-              <div style={{ background: 'rgba(0,0,0,0.3)', padding: '1rem', borderRadius: '8px', fontSize: '0.9rem', color: '#e9d5ff', fontStyle: 'italic', lineHeight: '1.5' }}>
+              <div style={{ background: 'rgba(0,0,0,0.3)', padding: '1rem', borderRadius: '8px', fontSize: '0.9rem', color: '#e9d5ff', fontStyle: 'italic', lineHeight: '1.5', marginBottom: '0.75rem' }}>
                 "{layeringResult.rationale}"
               </div>
+
+              {layeringResult.application_order && (
+                <div style={{ background: 'rgba(59, 130, 246, 0.1)', border: '1px solid rgba(59, 130, 246, 0.3)', padding: '0.85rem', borderRadius: '8px', fontSize: '0.85rem', color: 'var(--text-main)', textAlign: 'left', marginBottom: '0.5rem' }}>
+                  <strong>Ordem de Aplicação:</strong> {layeringResult.application_order}
+                </div>
+              )}
+              {layeringResult.usage_tips && (
+                <div style={{ background: 'rgba(74, 222, 128, 0.08)', border: '1px solid rgba(74, 222, 128, 0.25)', padding: '0.85rem', borderRadius: '8px', fontSize: '0.85rem', color: 'var(--text-muted)', textAlign: 'left' }}>
+                  <strong>Sugestão de Uso:</strong> {layeringResult.usage_tips}
+                </div>
+              )}
             </div>
           ) : (
-            <p style={{ textAlign: 'center', color: 'var(--text-muted)' }}>Você precisa de pelo menos 2 perfumes na coleção para fazer misturas.</p>
+            <p style={{ textAlign: 'center', color: 'var(--text-muted)' }}>
+              {inventory.length < 2
+                ? 'Você precisa de pelo menos 2 perfumes na coleção para fazer misturas.'
+                : 'Selecione os perfumes acima e clique em "Gerar Combinação".'}
+            </p>
           )}
         </div>
       )}
@@ -365,19 +408,34 @@ const Analysis = () => {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           <h3 className="subtitle">Encontre o Melhor Contratipo</h3>
           <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-            Digite o nome de um perfume importado caro e a IA te mostrará as melhores opções acessíveis no Brasil.
+            Selecione um perfume da sua coleção ou digite qualquer fragrância de grife/nicho para descobrir os melhores contratipos e similares.
           </p>
+          {inventory.length > 0 && (
+            <select
+              value=""
+              onChange={(e) => {
+                if (e.target.value) setCloneSearchText(e.target.value);
+              }}
+              style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-main)' }}
+            >
+              <option value="">Ou escolha rapidamente um perfume da sua coleção...</option>
+              {inventory.map(p => (
+                <option key={p.id} value={`${p.name} ${p.brand || ''}`.trim()}>{p.name} ({p.brand})</option>
+              ))}
+            </select>
+          )}
           <div style={{ display: 'flex', gap: '0.5rem' }}>
             <input 
               type="text"
               placeholder="Ex: Tom Ford Oud Wood"
               value={cloneSearchText}
               onChange={(e) => setCloneSearchText(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleSearchClones(); }}
               style={{ flex: 1, padding: '0.75rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.2)', color: 'white' }}
             />
             <button 
               onClick={handleSearchClones}
-              disabled={isFindingClones}
+              disabled={isFindingClones || !cloneSearchText.trim()}
               className="btn-primary"
             >
               Buscar

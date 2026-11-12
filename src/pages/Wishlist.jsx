@@ -12,29 +12,43 @@ const Wishlist = () => {
   const [isSearchingAI, setIsSearchingAI] = useState(false);
 
   const handleAdd = async () => {
-    if (!newItem.name.trim() || !newItem.targetPrice) {
+    const cleanName = newItem.name.trim();
+    const priceNum = parseFloat(newItem.targetPrice);
+    const cleanLink = newItem.link.trim();
+
+    if (!cleanName || !newItem.targetPrice) {
       toastError('Informe o nome do perfume e seu preço-alvo.');
+      return;
+    }
+
+    if (isNaN(priceNum) || priceNum <= 0) {
+      toastError('Informe um preço-alvo válido maior que zero.');
+      return;
+    }
+
+    if (cleanLink && !/^https?:\/\/[^\s$.?#].[^\s]*$/i.test(cleanLink)) {
+      toastError('Informe um link externo válido iniciando com http:// ou https://.');
       return;
     }
 
     setIsSearchingAI(true);
     try {
-      const enrichedData = await enrichPerfumeData({ perfumeName: newItem.name });
+      const enrichedData = await enrichPerfumeData({ perfumeName: cleanName });
       
       const query = `comprar ${enrichedData.name} ${enrichedData.brand || ""} ${newItem.volume} -decant -amostra -fracionado`.trim();
       const autoLink = `https://www.google.com/search?tbm=shop&q=${encodeURIComponent(query)}`;
 
       await addToWishlist({
-        name: enrichedData.name,
-        targetPrice: parseFloat(newItem.targetPrice),
+        name: enrichedData.name || cleanName,
+        targetPrice: priceNum,
         brand: enrichedData.brand,
         type: enrichedData.type,
         icon: enrichedData.icon,
         volume: newItem.volume,
-        link: newItem.link || autoLink
+        link: cleanLink || autoLink
       });
       
-      toastSuccess(`${enrichedData.name} adicionado à sua lista de desejos!`);
+      toastSuccess(`${enrichedData.name || cleanName} adicionado à sua lista de desejos!`);
       setShowAddForm(false);
       setNewItem({ name: '', targetPrice: '', volume: '100ml', link: '' });
     } catch (error) {

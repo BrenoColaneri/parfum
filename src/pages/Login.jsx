@@ -1,12 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Flame, Loader2, Sparkles, Key } from 'lucide-react';
 import { useAppContext } from '../context/AppProvider';
 import { useToast } from '../context/ToastContext';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../utils/supabaseClient';
 
+const translateAuthError = (message = '') => {
+  const lower = message.toLowerCase();
+  if (lower.includes('invalid login credentials') || lower.includes('invalid_credentials')) {
+    return 'E-mail ou senha incorretos. Verifique suas credenciais.';
+  }
+  if (lower.includes('already registered') || lower.includes('already exists')) {
+    return 'Este e-mail já está cadastrado. Faça login ou recupere sua senha.';
+  }
+  if (lower.includes('at least 6 characters') || lower.includes('mínimo 6 caracteres')) {
+    return 'A senha deve ter no mínimo 6 caracteres.';
+  }
+  if (lower.includes('email not confirmed')) {
+    return 'E-mail ainda não confirmado. Verifique sua caixa de entrada.';
+  }
+  if (lower.includes('rate limit') || lower.includes('too many requests')) {
+    return 'Muitas tentativas seguidas. Aguarde alguns instantes e tente novamente.';
+  }
+  return message || 'Falha na autenticação. Verifique os dados informados.';
+};
+
 const Login = () => {
-  const { login, signup, enableDemoMode } = useAppContext();
+  const { isAuthenticated, login, signup, enableDemoMode } = useAppContext();
   const { toastSuccess, toastError, toastInfo } = useToast();
   const navigate = useNavigate();
 
@@ -19,10 +39,25 @@ const Login = () => {
   const [forgotEmail, setForgotEmail] = useState('');
   const [isSendingReset, setIsSendingReset] = useState(false);
 
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/', { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!email || !password) {
+    const cleanEmail = email.trim();
+    if (!cleanEmail || !password) {
       toastError('Preencha seu e-mail e senha.');
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+      toastError('Informe um endereço de e-mail válido.');
+      return;
+    }
+    if (isSignUp && password.length < 6) {
+      toastError('A senha deve ter no mínimo 6 caracteres.');
       return;
     }
 
@@ -34,16 +69,16 @@ const Login = () => {
           setIsLoading(false);
           return;
         }
-        await signup(email, password, name);
+        await signup(cleanEmail, password, name.trim());
         toastSuccess('Conta criada com sucesso! Você já pode entrar.');
         setIsSignUp(false);
       } else {
-        await login(email, password);
+        await login(cleanEmail, password);
         toastSuccess('Bem-vindo(a) à sua Biblioteria Olfativa!');
         navigate('/');
       }
     } catch (err) {
-      toastError(err.message || 'Falha na autenticação. Verifique os dados.');
+      toastError(translateAuthError(err.message));
     } finally {
       setIsLoading(false);
     }

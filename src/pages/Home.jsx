@@ -8,7 +8,7 @@ import { simulateAIRecommendation, formatCustomOccasion } from '../utils/aiRecom
 
 const Home = () => {
   const navigate = useNavigate();
-  const { weather, inventory, user, customOccasions, addCustomOccasion, removeCustomOccasion } = useAppContext();
+  const { weather, weatherWarning, inventory, user, customOccasions, addCustomOccasion, removeCustomOccasion } = useAppContext();
   const { toastSuccess, toastError, toastWarning, toastInfo } = useToast();
   const [selectedOccasion, setSelectedOccasion] = useState(null);
   const [timeOfDay, setTimeOfDay] = useState('Agora');
@@ -64,6 +64,11 @@ const Home = () => {
     setIsAddingOccasion(true);
     try {
       const result = await formatCustomOccasion(newOccasionText);
+      if (allOccasions.some(o => o.id.toLowerCase() === result.name.toLowerCase())) {
+        toastWarning(`A ocasião "${result.name}" já existe na sua lista.`);
+        setIsAddingOccasion(false);
+        return;
+      }
       addCustomOccasion(result);
       setNewOccasionText('');
       setShowAddModal(false);
@@ -102,7 +107,7 @@ const Home = () => {
       } else {
         toastError("Não foi possível gerar a recomendação. Tente novamente.");
       }
-    } catch (err) {
+    } catch {
       toastError("Erro ao consultar o Oráculo de IA.");
     } finally {
       setIsThinking(false);
@@ -131,6 +136,21 @@ const Home = () => {
         </div>
         <CloudRain size={64} style={{ opacity: 0.8 }} />
       </div>
+
+      {weatherWarning && (
+        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', borderRadius: '10px', padding: '0.6rem 0.9rem', marginTop: '-0.75rem', marginBottom: '1.25rem' }}>
+          ℹ️ {weatherWarning}
+        </div>
+      )}
+
+      {inventory.length === 0 && (
+        <div className="glass-card" style={{ padding: '1rem', marginBottom: '1.5rem', border: '1px dashed var(--accent)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+          <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Sua Biblioteria ainda está vazia. Cadastre seus perfumes para receber recomendações personalizadas!</span>
+          <button onClick={() => navigate('/inventory')} style={{ background: 'var(--accent)', color: 'white', border: 'none', padding: '0.5rem 1rem', borderRadius: '8px', fontWeight: '600', cursor: 'pointer' }}>
+            Ir para Biblioteca
+          </button>
+        </div>
+      )}
 
       <h3 className="section-header">Horário do Evento</h3>
       <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '2rem' }}>

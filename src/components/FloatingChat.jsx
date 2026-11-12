@@ -2,9 +2,11 @@ import React, { useState, useRef, useEffect } from 'react';
 import { MessageSquare, X, Send, Camera, ImageIcon, Loader2 } from 'lucide-react';
 import { chatWithSommelier } from '../utils/aiRecommender';
 import { useAppContext } from '../context/AppProvider';
+import { useToast } from '../context/ToastContext';
 
 const FloatingChat = () => {
   const { inventory } = useAppContext();
+  const { toastError, toastWarning } = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const [chatMessages, setChatMessages] = useState([
     { role: 'model', text: 'Olá! Sou o Jean, seu Sommelier pessoal. Você pode me perguntar sobre seus perfumes ou enviar uma foto do seu look para eu recomendar o perfume ideal.' }
@@ -25,7 +27,10 @@ const FloatingChat = () => {
   }, [chatMessages, isOpen, isChatting]);
 
   const handleSendChatMessage = async () => {
-    if (!chatInput.trim() && !chatImage) return;
+    if (!chatInput.trim() && !chatImage) {
+      toastWarning('Digite uma mensagem ou anexe uma foto antes de enviar.');
+      return;
+    }
     
     const userMessageText = chatInput.trim() || 'Aqui está a foto.';
     const newMessage = { role: 'user', text: userMessageText, image: chatImage?.preview };
@@ -50,8 +55,12 @@ const FloatingChat = () => {
   const handleImageUpload = (e) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (!file.type.startsWith('image/')) {
+        toastError('Selecione um arquivo de imagem válido (JPG, PNG, WEBP).');
+        return;
+      }
       if (file.size > 4 * 1024 * 1024) {
-        alert('A foto para o Sommelier deve ter no máximo 4MB.');
+        toastError('A foto para o Sommelier deve ter no máximo 4MB.');
         return;
       }
       const reader = new FileReader();
@@ -152,7 +161,7 @@ const FloatingChat = () => {
                   boxShadow: '0 2px 5px rgba(0,0,0,0.2)'
                 }}>
                   {msg.image && <img src={msg.image} alt="Upload" style={{ width: '100%', borderRadius: '8px', marginBottom: '0.5rem' }} />}
-                  <p style={{ margin: 0, fontSize: '0.85rem', lineHeight: '1.4' }}>{msg.text}</p>
+                  <p style={{ margin: 0, fontSize: '0.85rem', lineHeight: '1.4', wordBreak: 'break-word' }}>{msg.text}</p>
                 </div>
               </div>
             ))}
@@ -189,8 +198,8 @@ const FloatingChat = () => {
                 placeholder="Pergunte algo..." 
                 value={chatInput}
                 onChange={e => setChatInput(e.target.value)}
-                onKeyPress={e => e.key === 'Enter' && !isChatting && handleSendChatMessage()}
-                style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '0.9rem' }}
+                onKeyDown={e => e.key === 'Enter' && !isChatting && handleSendChatMessage()}
+                style={{ background: 'transparent', border: 'none', color: 'var(--text-main)', width: '100%', outline: 'none', fontSize: '0.9rem' }}
               />
             </div>
             <button 

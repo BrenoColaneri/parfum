@@ -189,21 +189,24 @@ Formato esperado:
       }
 
       case 'layering': {
-        const { inventory, basePerfume } = payload || {};
+        const { inventory, basePerfume, secondPerfume } = payload || {};
         const summary = (inventory || []).map(p => `- ${p.name} (${p.brand || 'N/A'} - ${p.type})`).join('\n');
         promptText = `
 Você é um mestre perfumista especialista na arte de "Layering" (misturar dois perfumes diferentes na pele).
 Abaixo está a coleção de perfumes do usuário:
 ${summary}
 
-${basePerfume ? `O usuário selecionou "${basePerfume.name}" como base. Escolha outro perfume da lista para misturar com ele.` : 'Escolha EXATAMENTE 2 perfumes diferentes da lista que se complementam.'}
+${basePerfume && secondPerfume ? `O usuário selecionou "${basePerfume.name}" e "${secondPerfume.name}" para combinar.` : basePerfume ? `O usuário selecionou "${basePerfume.name}" como base. Escolha outro perfume da lista para misturar com ele.` : 'Escolha EXATAMENTE 2 perfumes diferentes da lista que se complementam.'}
 
 Retorne EXATAMENTE um JSON válido:
 {
   "perfume1_name": "Nome do primeiro perfume",
   "perfume2_name": "Nome do segundo perfume",
   "mix_name": "Nome criativo para a mistura (ex: Oásis Noturno)",
-  "rationale": "Explique em 2 a 3 frases por que essas duas fragrâncias funcionam perfeitamente juntas."
+  "compatibility": "Porcentagem de harmonia olfativa (ex: 94%)",
+  "rationale": "Explique em 2 a 3 frases por que essas duas fragrâncias funcionam perfeitamente juntas.",
+  "application_order": "Ordem recomendada de aplicação e quantidade de borrifadas de cada um.",
+  "usage_tips": "Sugestão de ocasião e clima ideais para usar essa combinação."
 }
 `;
         contents = [promptText];
