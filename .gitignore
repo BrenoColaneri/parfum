@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Relatorios de auditoria e testes temporarios
+RELATORIO_AUDITORIA.md
+diagrama_*.html
+testGemini*.mjs
