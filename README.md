@@ -2,6 +2,8 @@
 
 > **Aplicação Progressive Web App (PWA) de luxo para catalogação de coleções de perfumes, diário olfativo, recomendação inteligente baseada no clima e consultoria com IA generativa.**
 
+🌐 **Acesse a aplicação em produção:** [https://parfum-two-delta.vercel.app/](https://parfum-two-delta.vercel.app/)
+
 ---
 
 ## 📌 Sumário
@@ -210,9 +212,10 @@ npm test
  ✓ src/test/auth.test.js (4 tests)
  ✓ src/test/inventory.test.js (5 tests)
  ✓ src/test/aiRecommender.test.js (7 tests)
+ ✓ src/test/fullValidation.test.jsx (15 tests)
 
- Test Files  5 passed (5)
-      Tests  22 passed (22)
+ Test Files  6 passed (6)
+      Tests  37 passed (37)
 ```
 
 ---
