@@ -1,11 +1,13 @@
 import React, { useState, useMemo } from 'react';
-import { CalendarDays, ArrowLeft, BarChart3, Trophy, PieChart as PieChartIcon, Wallet, Trash2 } from 'lucide-react';
+import { CalendarDays, BarChart3, Trophy, PieChart as PieChartIcon, Wallet, Trash2 } from 'lucide-react';
 import { useAppContext } from '../context/AppProvider';
+import { useToast } from '../context/ToastContext';
 import { useNavigate } from 'react-router-dom';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 
 const History = () => {
   const { sotdHistory, inventory, removeSotd } = useAppContext();
+  const { toastInfo, showConfirm } = useToast();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('historico');
 
@@ -74,8 +76,21 @@ const History = () => {
   }, [inventory]);
 
   const totalInvested = useMemo(() => {
-    return inventory.reduce((total, p) => total + (p.price_paid || 0), 0);
+    return inventory.reduce((total, p) => total + (parseFloat(p.price_paid) || 0), 0);
   }, [inventory]);
+
+  const handleDeleteSotd = (sotd_id, perfumeName) => {
+    showConfirm({
+      title: 'Remover do Histórico?',
+      message: `Deseja remover o registro de uso de "${perfumeName}" deste dia?`,
+      confirmText: 'Remover',
+      isDanger: true,
+      onConfirm: async () => {
+        await removeSotd(sotd_id);
+        toastInfo('Registro removido do histórico.');
+      }
+    });
+  };
 
   return (
     <div className="page-wrapper" style={{ paddingBottom: '5rem' }}>
@@ -124,7 +139,11 @@ const History = () => {
                           <h4 style={{ fontSize: '1.1rem', margin: 0 }}>{item.perfume.name}</h4>
                           <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{item.perfume.type}</span>
                         </div>
-                        <button onClick={() => removeSotd(item.sotd_id)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '0.5rem' }}>
+                        <button 
+                          onClick={() => handleDeleteSotd(item.sotd_id, item.perfume.name)} 
+                          style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '0.5rem' }}
+                          title="Remover do histórico"
+                        >
                           <Trash2 size={20} />
                         </button>
                       </div>

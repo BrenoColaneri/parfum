@@ -4,11 +4,14 @@ import './index.css'
 import App from './App.jsx'
 
 import { AppProvider } from './context/AppProvider.jsx'
+import { ToastProvider } from './context/ToastContext.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <AppProvider>
-      <App />
+      <ToastProvider>
+        <App />
+      </ToastProvider>
     </AppProvider>
   </StrictMode>,
 )

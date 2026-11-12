@@ -3,11 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import * as LucideIcons from 'lucide-react';
 import { CloudRain, Thermometer, Droplets, Briefcase, Heart, Dumbbell, GlassWater, PartyPopper, Utensils, Coffee, Music, Sun, Moon, Plus, X, Loader2, Sparkles } from 'lucide-react';
 import { useAppContext } from '../context/AppProvider';
+import { useToast } from '../context/ToastContext';
 import { simulateAIRecommendation, formatCustomOccasion } from '../utils/aiRecommender';
 
 const Home = () => {
   const navigate = useNavigate();
   const { weather, inventory, user, customOccasions, addCustomOccasion, removeCustomOccasion } = useAppContext();
+  const { toastSuccess, toastError, toastWarning, toastInfo } = useToast();
   const [selectedOccasion, setSelectedOccasion] = useState(null);
   const [timeOfDay, setTimeOfDay] = useState('Agora');
   const [isThinking, setIsThinking] = useState(false);
@@ -65,19 +67,30 @@ const Home = () => {
       addCustomOccasion(result);
       setNewOccasionText('');
       setShowAddModal(false);
+      toastSuccess(`Ocasião "${result.name}" adicionada com sucesso!`);
     } catch (error) {
       console.error(error);
-      alert("Erro ao adicionar ocasião.");
+      toastError("Erro ao adicionar ocasião.");
     } finally {
       setIsAddingOccasion(false);
     }
   };
 
   const handleRecommend = async () => {
-    if (selectedOccasion && inventory.length > 0) {
-      setIsThinking(true);
+    if (inventory.length === 0) {
+      toastWarning("Adicione fragrâncias na sua Biblioteria primeiro para o Oráculo analisar!");
+      navigate('/inventory');
+      return;
+    }
+
+    if (!selectedOccasion) {
+      toastInfo("Selecione uma ocasião abaixo para o Oráculo recomendar o perfume ideal.");
+      return;
+    }
+
+    setIsThinking(true);
+    try {
       const aiResult = await simulateAIRecommendation(weather, selectedOccasion, inventory, timeOfDay);
-      setIsThinking(false);
       if (aiResult) {
         const recommendation = {
           ...aiResult,
@@ -86,10 +99,13 @@ const Home = () => {
           timeOfDay
         };
         navigate('/analysis', { state: { recommendation } });
+      } else {
+        toastError("Não foi possível gerar a recomendação. Tente novamente.");
       }
-    } else if (inventory.length === 0) {
-      alert("Por favor, adicione perfumes na sua Biblioteria primeiro!");
-      navigate('/inventory');
+    } catch (err) {
+      toastError("Erro ao consultar o Oráculo de IA.");
+    } finally {
+      setIsThinking(false);
     }
   };
 

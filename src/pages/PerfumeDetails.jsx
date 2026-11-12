@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Loader2, User, CalendarDays, Star, Layers, Activity, Users, DollarSign, Droplets, Trees, Flame, Wind, FlaskConical, Leaf, Edit2, Save, X } from 'lucide-react';
+import { ArrowLeft, Loader2, User, CalendarDays, Star, Layers, Activity, Users, DollarSign, Droplets, Trees, Flame, Wind, FlaskConical, Leaf, Edit2, Save, X, Trash2 } from 'lucide-react';
 import { useAppContext } from '../context/AppProvider';
+import { useToast } from '../context/ToastContext';
 import { fetchPerfumeDetails } from '../utils/aiRecommender';
 
 const PerfumeDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { inventory, updatePerfumeDetails, updateUserReview, updatePricePaid, recordSotd, removeSotd, sotdHistory, editPerfumeBaseInfo } = useAppContext();
+  const { inventory, updatePerfumeDetails, updateUserReview, updatePricePaid, recordSotd, removeSotd, sotdHistory, editPerfumeBaseInfo, removePerfume } = useAppContext();
+  const { toastSuccess, toastError, toastInfo, showConfirm } = useToast();
   
   const [perfume, setPerfume] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -76,44 +78,58 @@ const PerfumeDetails = () => {
         await removeSotd(record.id);
       }
       setJustRecordedSotd(false);
+      toastInfo('Perfume do Dia desmarcado.');
     } else {
       await recordSotd(perfume.id, todayStr);
       setJustRecordedSotd(true);
+      toastSuccess('Registrado como seu Perfume do Dia!');
     }
   };
 
   const handleSaveReview = async () => {
     setIsSavingReview(true);
-    await updateUserReview(perfume.id, localRating, localReview);
-    if (localPricePaid !== '') {
-      await updatePricePaid(perfume.id, parseFloat(localPricePaid));
+    try {
+      await updateUserReview(perfume.id, localRating, localReview);
+      if (localPricePaid !== '') {
+        await updatePricePaid(perfume.id, parseFloat(localPricePaid));
+      }
+      toastSuccess('Diário olfativo atualizado com sucesso!');
+    } catch (e) {
+      toastError('Erro ao salvar avaliação.');
+    } finally {
+      setIsSavingReview(false);
     }
-    setIsSavingReview(false);
   };
 
   const handleSaveEdit = async () => {
     setIsSavingReview(true);
-    const updated = {
-      name: editForm.name,
-      brand: editForm.brand,
-      concentration: editForm.concentration,
-      type: editForm.type,
-      price_paid: parseFloat(editForm.price_paid) || 0
-    };
-    await editPerfumeBaseInfo(perfume.id, updated);
-    
-    let newDetails = perfume.full_details;
-    if (editForm.volume_ml) {
-      const vol = parseFloat(editForm.volume_ml);
-      newDetails = { ...perfume.full_details, volume_ml: vol };
-      if (typeof newDetails.sprays_used === 'undefined') newDetails.sprays_used = 0;
-      await updatePerfumeDetails(perfume.id, newDetails);
+    try {
+      const updated = {
+        name: editForm.name,
+        brand: editForm.brand,
+        concentration: editForm.concentration,
+        type: editForm.type,
+        price_paid: parseFloat(editForm.price_paid) || 0
+      };
+      await editPerfumeBaseInfo(perfume.id, updated);
+      
+      let newDetails = perfume.full_details;
+      if (editForm.volume_ml) {
+        const vol = parseFloat(editForm.volume_ml);
+        newDetails = { ...perfume.full_details, volume_ml: vol };
+        if (typeof newDetails.sprays_used === 'undefined') newDetails.sprays_used = 0;
+        await updatePerfumeDetails(perfume.id, newDetails);
+      }
+      
+      setPerfume(prev => ({...prev, ...updated, full_details: newDetails}));
+      setLocalPricePaid(updated.price_paid);
+      setIsEditing(false);
+      toastSuccess('Informações básicas atualizadas!');
+    } catch (e) {
+      toastError('Erro ao atualizar perfume.');
+    } finally {
+      setIsSavingReview(false);
     }
-    
-    setPerfume(prev => ({...prev, ...updated, full_details: newDetails}));
-    setLocalPricePaid(updated.price_paid);
-    setIsEditing(false);
-    setIsSavingReview(false);
   };
 
   const handleAddSprays = async (sprays) => {
@@ -124,6 +140,21 @@ const PerfumeDetails = () => {
     
     await updatePerfumeDetails(perfume.id, newDetails);
     setPerfume(prev => ({...prev, full_details: newDetails}));
+    toastSuccess(`+${sprays} borrifadas registradas.`);
+  };
+
+  const handleDeletePerfume = () => {
+    showConfirm({
+      title: 'Excluir Perfume?',
+      message: `Tem certeza que deseja remover ${perfume.name} da sua coleção? Essa ação não pode ser desfeita.`,
+      confirmText: 'Excluir',
+      isDanger: true,
+      onConfirm: async () => {
+        await removePerfume(perfume.id);
+        toastInfo(`${perfume.name} removido da sua Biblioteria.`);
+        navigate('/inventory');
+      }
+    });
   };
 
   if (error) {
@@ -430,9 +461,9 @@ const PerfumeDetails = () => {
                 resize: 'vertical', 
                 marginBottom: '1rem', 
                 fontSize: '0.9rem',
-                background: 'rgba(0,0,0,0.2)',
-                border: '1px solid rgba(255,255,255,0.1)',
-                color: 'white',
+                background: 'var(--glass-bg)',
+                border: '1px solid var(--glass-border)',
+                color: 'var(--text-main)',
                 padding: '1rem',
                 borderRadius: '8px',
                 outline: 'none'
@@ -449,9 +480,9 @@ const PerfumeDetails = () => {
                 style={{
                   flex: 1,
                   padding: '0.8rem',
-                  background: 'rgba(0,0,0,0.2)',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  color: 'white',
+                  background: 'var(--glass-bg)',
+                  border: '1px solid var(--glass-border)',
+                  color: 'var(--text-main)',
                   borderRadius: '8px',
                   outline: 'none'
                 }}
@@ -465,17 +496,40 @@ const PerfumeDetails = () => {
               style={{ 
                 width: '100%', 
                 padding: '1rem', 
-                background: 'rgba(167, 139, 250, 0.1)', 
-                color: 'var(--accent)', 
-                border: '1px solid rgba(167, 139, 250, 0.3)',
+                background: 'var(--accent)', 
+                color: 'white', 
+                border: 'none',
                 cursor: 'pointer',
                 fontWeight: 'bold',
                 display: 'flex',
                 justifyContent: 'center',
-                alignItems: 'center'
+                alignItems: 'center',
+                boxShadow: '0 4px 15px rgba(59, 130, 246, 0.3)'
               }}
             >
-              {isSavingReview ? 'Salvando...' : 'Salvar Avaliação'}
+              {isSavingReview ? 'Salvando...' : 'Salvar Avaliação & Preço'}
+            </button>
+          </div>
+
+          <div style={{ marginTop: '2.5rem', textAlign: 'center' }}>
+            <button
+              onClick={handleDeletePerfume}
+              style={{
+                background: 'rgba(239, 68, 68, 0.1)',
+                color: '#ef4444',
+                border: '1px solid rgba(239, 68, 68, 0.3)',
+                padding: '0.85rem 1.5rem',
+                borderRadius: '10px',
+                cursor: 'pointer',
+                fontWeight: 600,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                fontSize: '0.9rem'
+              }}
+            >
+              <Trash2 size={18} />
+              Excluir Perfume da Coleção
             </button>
           </div>
 

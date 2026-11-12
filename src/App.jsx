@@ -27,7 +27,7 @@ const PrivateRoute = ({ children }) => {
   
   if (isAuthLoading) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh', background: 'var(--bg-color)', color: 'var(--accent)' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh', background: 'var(--bg-dark)', color: 'var(--accent)' }}>
         <Loader2 className="lucide-spin" size={48} style={{ marginBottom: '1rem' }} />
         <p style={{ color: 'var(--text-muted)' }}>Carregando sua coleção...</p>
       </div>
@@ -35,6 +35,18 @@ const PrivateRoute = ({ children }) => {
   }
 
   return isAuthenticated ? children : <Navigate to="/login" />;
+};
+
+const NavigationAndChat = () => {
+  const { isAuthenticated } = useAppContext();
+  const location = useLocation();
+  if (!isAuthenticated || location.pathname === '/login') return null;
+  return (
+    <>
+      <FloatingChat />
+      <BottomNav />
+    </>
+  );
 };
 
 function App() {
@@ -51,18 +63,10 @@ function App() {
           <Route path="/history" element={<PrivateRoute><History /></PrivateRoute>} />
           <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
           <Route path="/perfume/:id" element={<PrivateRoute><PerfumeDetails /></PrivateRoute>} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
         
-        {/* Render BottomNav only if authenticated (since it relies on context partially, and shouldn't be seen on login) */}
-        <Routes>
-          <Route path="/login" element={null} />
-          <Route path="*" element={
-            <PrivateRoute>
-              <FloatingChat />
-              <BottomNav />
-            </PrivateRoute>
-          } />
-        </Routes>
+        <NavigationAndChat />
       </div>
     </BrowserRouter>
   );

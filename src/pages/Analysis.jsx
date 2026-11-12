@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Info, Flame, Trees, CloudOff, ArrowLeft, Droplet, CheckCircle2, Sparkles, Loader2, Search, Swords, Compass } from 'lucide-react';
+import { Info, Flame, Trees, Droplet, CheckCircle2, Sparkles, Loader2, Search, Swords, Compass, AlertTriangle } from 'lucide-react';
 import { recommendNewPerfumes, recommendLayering, findClones, perfumeBattle } from '../utils/aiRecommender';
 import { useAppContext } from '../context/AppProvider';
+import { useToast } from '../context/ToastContext';
 
 const Analysis = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { inventory, recordSotd } = useAppContext();
+  const { toastSuccess } = useToast();
   
   const recommendation = location.state?.recommendation;
   const [activeTab, setActiveTab] = useState(recommendation ? 'uso' : 'descobrir');
@@ -72,6 +74,7 @@ const Analysis = () => {
   const handleConfirmUse = async () => {
     const todayStr = new Date().toISOString().split('T')[0];
     await recordSotd(perfume.id, todayStr);
+    toastSuccess(`"${perfume.name}" registrado como seu Perfume do Dia!`);
     navigate('/history');
   };
 
@@ -183,11 +186,11 @@ const Analysis = () => {
             </p>
           </div>
 
-          <div className="avoid-box" style={{ marginBottom: '2rem', background: 'rgba(167, 139, 250, 0.1)', border: '1px solid rgba(167, 139, 250, 0.2)' }}>
-            <Sparkles size={32} color="#a855f7" style={{ flexShrink: 0 }} />
+          <div className="avoid-box" style={{ marginBottom: '1.5rem', background: 'var(--glass-bg)', border: '1px solid var(--accent)' }}>
+            <Sparkles size={28} color="var(--accent)" style={{ flexShrink: 0 }} />
             <div className="avoid-text">
-              <h4 style={{ color: '#c4b5fd' }}>Dica de Aplicação:</h4>
-              <p style={{ color: '#ddd' }}>{recommendation.applicationTip || 'Aplique em pontos de pulsação (pescoço e pulsos) para maior durabilidade.'}</p>
+              <h4 style={{ color: 'var(--text-main)', margin: '0 0 0.25rem' }}>Dica do Sommelier:</h4>
+              <p style={{ color: 'var(--text-muted)', margin: 0, fontSize: '0.9rem' }}>{recommendation.applicationTip || 'Aplique em pontos de pulsação (pescoço e pulsos) para maior durabilidade.'}</p>
             </div>
           </div>
 
@@ -203,13 +206,15 @@ const Analysis = () => {
             ))}
           </div>
 
-          <div className="avoid-box" style={{ marginBottom: '1.5rem', background: 'var(--glass-bg)', border: '1px solid var(--accent)' }}>
-            <Sparkles size={32} color="var(--accent)" style={{ flexShrink: 0 }} />
-            <div className="avoid-text">
-              <h4 style={{ color: 'var(--text-main)' }}>Dica de Aplicação:</h4>
-              <p style={{ color: 'var(--text-muted)' }}>{recommendation.applicationTip || 'Aplique em pontos de pulsação (pescoço e pulsos) para maior durabilidade.'}</p>
+          {avoidNotes && avoidNotes.length > 0 && (
+            <div className="avoid-box" style={{ marginBottom: '1.5rem', background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.25)' }}>
+              <AlertTriangle size={24} color="#ef4444" style={{ flexShrink: 0 }} />
+              <div className="avoid-text">
+                <h4 style={{ color: '#fca5a5', margin: '0 0 0.25rem' }}>Notas a Evitar no Clima de Hoje:</h4>
+                <p style={{ color: 'var(--text-muted)', margin: 0, fontSize: '0.85rem' }}>{avoidNotes.join(' • ')}</p>
+              </div>
             </div>
-          </div>
+          )}
 
           <div style={{ marginBottom: '2rem' }}>
             <h3 className="subtitle" style={{ textAlign: 'center', marginBottom: '1rem' }}>Lojas Físicas na Sua Região</h3>

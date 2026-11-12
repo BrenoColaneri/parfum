@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diagrama de Contexto - Biblioteria Parfum</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: #0f172a;
+      color: #334155;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 2rem;
+    }
+    .container {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 2.5rem;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      max-width: 900px;
+      width: 100%;
+    }
+    .header-tag {
+      background: #f59e0b;
+      color: #000;
+      font-weight: 800;
+      font-size: 1.25rem;
+      display: inline-block;
+      padding: 0.5rem 1.25rem;
+      margin-bottom: 2rem;
+      border-radius: 4px;
+      box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3);
+    }
+    .diagram-wrapper {
+      position: relative;
+      width: 100%;
+      height: 520px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      background: #ffffff;
+      overflow: hidden;
+    }
+    svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+    .node {
+      position: absolute;
+      background: #ffffff;
+      border: 2px solid #334155;
+      color: #0f172a;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 0.75rem 1rem;
+      border-radius: 4px;
+      box-shadow: 3px 3px 0px rgba(15, 23, 42, 0.15);
+      z-index: 2;
+      font-size: 0.95rem;
+      font-weight: 600;
+      line-height: 1.35;
+      transition: all 0.2s ease;
+    }
+    .node:hover {
+      border-color: #0284c7;
+      color: #0284c7;
+      transform: translateY(-2px);
+      box-shadow: 4px 6px 12px rgba(2, 132, 199, 0.2);
+    }
+    .node-sub {
+      font-size: 0.75rem;
+      color: #64748b;
+      font-weight: 400;
+      margin-top: 3px;
+    }
+    /* Central */
+    #node-center {
+      top: 200px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 220px;
+      height: 80px;
+      background: #f8fafc;
+      border: 2.5px solid #0f172a;
+      border-radius: 6px;
+      font-size: 1.05rem;
+    }
+    #node-center:hover {
+      transform: translateX(-50%) translateY(-2px);
+    }
+    /* Top */
+    #node-top {
+      top: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 210px;
+      height: 70px;
+    }
+    #node-top:hover {
+      transform: translateX(-50%) translateY(-2px);
+    }
+    /* Bottom */
+    #node-bottom {
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 210px;
+      height: 70px;
+    }
+    #node-bottom:hover {
+      transform: translateX(-50%) translateY(-2px);
+    }
+    /* Left Top */
+    #node-left-top {
+      top: 80px;
+      left: 30px;
+      width: 210px;
+      height: 75px;
+    }
+    /* Left Bottom */
+    #node-left-bottom {
+      bottom: 80px;
+      left: 30px;
+      width: 210px;
+      height: 75px;
+    }
+    /* Right Top */
+    #node-right-top {
+      top: 80px;
+      right: 30px;
+      width: 210px;
+      height: 75px;
+    }
+    /* Right Bottom */
+    #node-right-bottom {
+      bottom: 80px;
+      right: 30px;
+      width: 210px;
+      height: 75px;
+    }
+    .footer-notes {
+      margin-top: 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      color: #64748b;
+      font-size: 0.85rem;
+    }
+    .actions {
+      margin-top: 1.5rem;
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+    }
+    .btn {
+      background: #0284c7;
+      color: white;
+      border: none;
+      padding: 0.6rem 1.2rem;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    .btn:hover {
+      background: #0369a1;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="header-tag">Modelo de Contexto - Biblioteria Parfum</div>
+
+    <div class="diagram-wrapper" id="diagram">
+      <svg id="lines" viewBox="0 0 800 520" preserveAspectRatio="none">
+        <!-- Linhas conectando os nós externos ao nó central -->
+        <!-- Top para Center -->
+        <line x1="400" y1="100" x2="400" y2="200" stroke="#334155" stroke-width="2" />
+        
+        <!-- Bottom para Center -->
+        <line x1="400" y1="420" x2="400" y2="280" stroke="#334155" stroke-width="2" />
+        
+        <!-- Left Top para Center -->
+        <path d="M 240 117.5 L 340 117.5 L 340 225 L 290 225" fill="none" stroke="#334155" stroke-width="2" />
+        <!-- Linha direta elegante ortogonal -->
+        <path d="M 240 117.5 L 320 117.5 L 320 225 L 290 225" fill="none" stroke="#334155" stroke-width="2" />
+
+        <!-- Left Bottom para Center -->
+        <path d="M 240 402.5 L 320 402.5 L 320 255 L 290 255" fill="none" stroke="#334155" stroke-width="2" />
+
+        <!-- Right Top para Center -->
+        <path d="M 560 117.5 L 480 117.5 L 480 225 L 510 225" fill="none" stroke="#334155" stroke-width="2" />
+
+        <!-- Right Bottom para Center -->
+        <path d="M 560 402.5 L 480 402.5 L 480 255 L 510 255" fill="none" stroke="#334155" stroke-width="2" />
+      </svg>
+
+      <!-- Nó Central -->
+      <div class="node" id="node-center">
+        Sistema Biblioteria Parfum
+        <span class="node-sub">(Aplicação Central PWA)</span>
+      </div>
+
+      <!-- Nó Superior -->
+      <div class="node" id="node-top">
+        Sistema de proteção
+        <span class="node-sub">Supabase Auth / RLS</span>
+      </div>
+
+      <!-- Nó Esquerda Superior -->
+      <div class="node" id="node-left-top">
+        Sistema de inteligência artificial
+        <span class="node-sub">Google Gemini (Oráculo / Visão)</span>
+      </div>
+
+      <!-- Nó Esquerda Inferior -->
+      <div class="node" id="node-left-bottom">
+        Sistema de atendimento e clima
+        <span class="node-sub">OpenWeather / Sensores GPS</span>
+      </div>
+
+      <!-- Nó Direita Superior -->
+      <div class="node" id="node-right-top">
+        Banco de dados de contas
+        <span class="node-sub">PostgreSQL (Usuários / Perfis)</span>
+      </div>
+
+      <!-- Nó Direita Inferior -->
+      <div class="node" id="node-right-bottom">
+        Banco de dados de operação
+        <span class="node-sub">PostgreSQL (Acervo / Storage)</span>
+      </div>
+
+      <!-- Nó Inferior -->
+      <div class="node" id="node-bottom">
+        Sistema de manutenção
+        <span class="node-sub">Vercel Platform / PWA Cache</span>
+      </div>
+    </div>
+
+    <div class="footer-notes">
+      <span><strong>Padrão:</strong> Modelo de Contexto (Ian Sommerville - Engenharia de Software)</span>
+      <span><strong>Projeto:</strong> Biblioteria Parfum (2026)</span>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn" onclick="window.print()">Imprimir / Salvar em PDF</button>
+  </div>
+
+</body>
+</html>

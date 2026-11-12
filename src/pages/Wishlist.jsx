@@ -1,43 +1,61 @@
 import React, { useState } from 'react';
-import { Plus, Trash2, Bell, TrendingDown, Tag, Sparkles, Droplets, Trees, Flame, Wind, Leaf, ShoppingCart } from 'lucide-react';
+import { Plus, Trash2, Bell, Tag, Sparkles, Droplets, Trees, Flame, Wind, Leaf, Search } from 'lucide-react';
 import { useAppContext } from '../context/AppProvider';
+import { useToast } from '../context/ToastContext';
 import { enrichPerfumeData } from '../utils/aiRecommender';
 
 const Wishlist = () => {
   const { wishlist, addToWishlist, removeFromWishlist } = useAppContext();
+  const { toastSuccess, toastError, toastInfo, showConfirm } = useToast();
   const [showAddForm, setShowAddForm] = useState(false);
   const [newItem, setNewItem] = useState({ name: '', targetPrice: '', volume: '100ml', link: '' });
-
   const [isSearchingAI, setIsSearchingAI] = useState(false);
 
   const handleAdd = async () => {
-    if (newItem.name && newItem.targetPrice) {
-      setIsSearchingAI(true);
-      try {
-        const enrichedData = await enrichPerfumeData({ perfumeName: newItem.name });
-        
-        const query = `comprar ${enrichedData.name} ${enrichedData.brand || ""} ${newItem.volume} -decant -amostra -fracionado -inspiração`.trim();
-        const autoLink = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
-
-        await addToWishlist({
-          name: enrichedData.name,
-          targetPrice: parseFloat(newItem.targetPrice),
-          brand: enrichedData.brand,
-          type: enrichedData.type,
-          icon: enrichedData.icon,
-          volume: newItem.volume,
-          link: newItem.link || autoLink // Usa o link manual ou gera um link otimizado do Google Shopping
-        });
-        
-        setShowAddForm(false);
-        setNewItem({ name: '', targetPrice: '', volume: '100ml', link: '' });
-      } catch (error) {
-        console.error("Erro ao buscar perfume na IA:", error);
-        alert('Erro ao buscar perfume. Tente novamente.');
-      } finally {
-        setIsSearchingAI(false);
-      }
+    if (!newItem.name.trim() || !newItem.targetPrice) {
+      toastError('Informe o nome do perfume e seu preço-alvo.');
+      return;
     }
+
+    setIsSearchingAI(true);
+    try {
+      const enrichedData = await enrichPerfumeData({ perfumeName: newItem.name });
+      
+      const query = `comprar ${enrichedData.name} ${enrichedData.brand || ""} ${newItem.volume} -decant -amostra -fracionado`.trim();
+      const autoLink = `https://www.google.com/search?tbm=shop&q=${encodeURIComponent(query)}`;
+
+      await addToWishlist({
+        name: enrichedData.name,
+        targetPrice: parseFloat(newItem.targetPrice),
+        brand: enrichedData.brand,
+        type: enrichedData.type,
+        icon: enrichedData.icon,
+        volume: newItem.volume,
+        link: newItem.link || autoLink
+      });
+      
+      toastSuccess(`${enrichedData.name} adicionado à sua lista de desejos!`);
+      setShowAddForm(false);
+      setNewItem({ name: '', targetPrice: '', volume: '100ml', link: '' });
+    } catch (error) {
+      console.error("Erro ao buscar perfume na IA:", error);
+      toastError('Erro ao consultar perfume. Tente novamente.');
+    } finally {
+      setIsSearchingAI(false);
+    }
+  };
+
+  const handleRemove = (item) => {
+    showConfirm({
+      title: 'Remover dos Desejos?',
+      message: `Deseja remover "${item.name}" da sua lista de desejos?`,
+      confirmText: 'Remover',
+      isDanger: true,
+      onConfirm: async () => {
+        await removeFromWishlist(item.id);
+        toastInfo(`"${item.name}" foi removido da lista.`);
+      }
+    });
   };
 
   const getIcon = (iconName) => {
@@ -51,131 +69,139 @@ const Wishlist = () => {
   };
 
   return (
-    <div className="page-wrapper">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-        <h2 className="page-title">Desejos & Alertas</h2>
+    <div className="page-wrapper" style={{ paddingBottom: '5rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+        <h2 className="page-title" style={{ margin: 0 }}>Lista de Desejos</h2>
         <Bell size={24} color="var(--accent)" />
       </div>
       <p className="subtitle" style={{ marginBottom: '1.5rem' }}>
-        A IA monitora o preço e alerta quando houver promoções abaixo da sua meta.
+        Acompanhe suas metas de compra com atalhos diretos para os principais e-commerces.
       </p>
 
       {showAddForm && (
         <div className="glass-card" style={{ marginBottom: '1.5rem', border: '1px solid var(--accent)' }}>
-          <h4 style={{ marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Sparkles size={18} color="var(--accent)" /> Rastrear Novo Perfume
+          <h4 style={{ marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-main)' }}>
+            <Sparkles size={18} color="var(--accent)" /> Cadastrar Novo Desejo
           </h4>
           <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>
-            Digite o nome que a IA vai descobrir a marca e o tipo para você.
+            A IA identifica a marca e gera os links diretos para cotação de mercado.
           </p>
           <input 
             type="text" 
-            placeholder="Nome do Perfume" 
+            placeholder="Nome do Perfume (Ex: Sauvage Elixir)" 
             value={newItem.name}
             onChange={(e) => setNewItem({...newItem, name: e.target.value})}
             disabled={isSearchingAI}
-            style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.2)', color: 'white', marginBottom: '1rem' }}
+            style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--glass-bg)', color: 'var(--text-main)', marginBottom: '1rem' }}
           />
           <input 
             type="number" 
-            placeholder="Preço Meta (R$)" 
+            placeholder="Preço Meta Desejado (R$)" 
             value={newItem.targetPrice}
             onChange={(e) => setNewItem({...newItem, targetPrice: e.target.value})}
             disabled={isSearchingAI}
-            style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.2)', color: 'white', marginBottom: '1rem' }}
+            style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--glass-bg)', color: 'var(--text-main)', marginBottom: '1rem' }}
           />
           <input 
             type="text" 
-            placeholder="Link da Loja (Opcional)" 
+            placeholder="Link Opcional de Loja Específica" 
             value={newItem.link}
             onChange={(e) => setNewItem({...newItem, link: e.target.value})}
             disabled={isSearchingAI}
-            style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.2)', color: 'white', marginBottom: '1rem' }}
+            style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--glass-bg)', color: 'var(--text-main)', marginBottom: '1rem' }}
           />
           <select
             value={newItem.volume}
             onChange={(e) => setNewItem({...newItem, volume: e.target.value})}
             disabled={isSearchingAI}
-            style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.2)', color: 'white', marginBottom: '1rem', appearance: 'none' }}
+            style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--glass-bg)', color: 'var(--text-main)', marginBottom: '1rem' }}
           >
             <option value="30ml">30ml</option>
             <option value="50ml">50ml</option>
+            <option value="75ml">75ml</option>
             <option value="100ml">100ml</option>
-            <option value="150ml">150ml</option>
+            <option value="125ml">125ml</option>
             <option value="200ml">200ml</option>
           </select>
           <div style={{ display: 'flex', gap: '0.5rem' }}>
             <button onClick={handleAdd} disabled={isSearchingAI} style={{ flex: 1, padding: '0.75rem', borderRadius: '8px', background: 'var(--accent)', color: 'white', border: 'none', fontWeight: 'bold' }}>
-              {isSearchingAI ? 'Analisando com IA...' : 'Monitorar'}
+              {isSearchingAI ? 'Processando IA...' : 'Cadastrar Meta'}
             </button>
-            <button onClick={() => setShowAddForm(false)} disabled={isSearchingAI} style={{ flex: 1, padding: '0.75rem', borderRadius: '8px', background: '#334155', color: 'white', border: 'none' }}>Cancelar</button>
+            <button onClick={() => setShowAddForm(false)} disabled={isSearchingAI} style={{ flex: 1, padding: '0.75rem', borderRadius: '8px', background: 'rgba(255,255,255,0.08)', color: 'var(--text-main)', border: '1px solid var(--glass-border)' }}>Cancelar</button>
           </div>
         </div>
       )}
 
       <div className="inventory-list">
         {wishlist.length === 0 ? (
-          <p style={{ textAlign: 'center', color: 'var(--text-muted)', marginTop: '2rem' }}>Nenhum alerta configurado.</p>
+          <div className="glass-card" style={{ textAlign: 'center', padding: '3rem 1.5rem', color: 'var(--text-muted)' }}>
+            <p style={{ fontSize: '1.05rem', marginBottom: '0.5rem', color: 'var(--text-main)' }}>Sua lista de desejos está vazia.</p>
+            <p style={{ fontSize: '0.85rem' }}>Clique no botão "+" abaixo para monitorar uma nova fragrância.</p>
+          </div>
         ) : (
           wishlist.map(item => (
             <div className="glass-card" key={item.id} style={{ 
               marginBottom: '1rem', 
-              border: item.isOnSale ? '1px solid #10b981' : '1px solid var(--glass-border)',
-              background: item.isOnSale ? 'rgba(16, 185, 129, 0.05)' : 'var(--glass-bg)'
+              border: '1px solid var(--glass-border)',
+              background: 'var(--glass-bg)'
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 {item.icon && (
-                  <div className="perfume-icon-wrapper" style={{ width: 40, height: 40, marginRight: '1rem', flexShrink: 0 }}>
+                  <div className="perfume-icon-wrapper" style={{ width: 44, height: 44, marginRight: '1rem', flexShrink: 0 }}>
                     {getIcon(item.icon)}
                   </div>
                 )}
                 <div style={{ flex: 1 }}>
                   {item.brand && <span style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--accent)', fontWeight: 'bold' }}>{item.brand}</span>}
-                  <h4 style={{ fontSize: '1.1rem', marginBottom: '0.25rem', marginTop: item.brand ? '0.1rem' : '0' }}>
+                  <h4 style={{ fontSize: '1.1rem', marginBottom: '0.25rem', marginTop: item.brand ? '0.1rem' : '0', color: 'var(--text-main)' }}>
                     {item.name} {item.volume && <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>({item.volume})</span>}
                   </h4>
-                  {item.type && <span style={{ fontSize: '0.7rem', display: 'inline-block', marginBottom: '0.5rem', opacity: 0.8 }}>{item.type}</span>}
+                  {item.type && <span style={{ fontSize: '0.75rem', display: 'inline-block', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>{item.type}</span>}
                   
-                  {item.isOnSale ? (
-                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', background: 'rgba(16, 185, 129, 0.2)', color: '#34d399', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 600, marginBottom: '0.5rem' }}>
-                      <TrendingDown size={14} /> ALERTA DE PREÇO
-                    </div>
-                  ) : (
-                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', background: 'rgba(148, 163, 184, 0.1)', color: 'var(--text-muted)', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.75rem', marginBottom: '0.5rem' }}>
-                      <Tag size={14} /> Monitorando
-                    </div>
-                  )}
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', background: 'rgba(59, 130, 246, 0.1)', color: 'var(--accent)', padding: '0.25rem 0.65rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 600, marginBottom: '0.75rem' }}>
+                    <Tag size={13} /> Preço Alvo Configurado
+                  </div>
 
-                  <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
+                  <div style={{ display: 'flex', gap: '1.5rem', margin: '0.25rem 0 1rem' }}>
                     <div>
-                      <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Preço Atual (IA)</div>
-                      <div style={{ fontSize: '1.1rem', fontWeight: 700, color: item.isOnSale ? '#10b981' : 'var(--text-main)' }}>
-                        R$ {item.currentPrice.toFixed(2)}
-                      </div>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Sua Meta</div>
-                      <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>
-                        R$ {item.targetPrice.toFixed(2)}
+                      <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Sua Meta de Compra</div>
+                      <div style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--accent)' }}>
+                        R$ {Number(item.targetPrice || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                       </div>
                     </div>
                   </div>
 
-                  {item.isOnSale && item.link && (
-                    <a href={item.link} target="_blank" rel="noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', background: '#10b981', color: 'white', textDecoration: 'none', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 'bold', marginTop: '1rem' }}>
-                      <ShoppingCart size={16} /> Comprar Agora
+                  {/* Links de Consulta em Lojas Reais */}
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.5rem', fontWeight: 500 }}>
+                    Consultar Preço Atual em Lojas:
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                    <a 
+                      href={item.link || `https://www.google.com/search?tbm=shop&q=${encodeURIComponent(item.name + ' ' + (item.brand || ''))}`}
+                      target="_blank" 
+                      rel="noreferrer" 
+                      style={{ fontSize: '0.75rem', padding: '0.4rem 0.75rem', background: 'rgba(59, 130, 246, 0.15)', color: 'var(--accent)', textDecoration: 'none', borderRadius: '6px', border: '1px solid rgba(59, 130, 246, 0.3)', display: 'inline-flex', alignItems: 'center', gap: '0.3rem', fontWeight: 600 }}
+                    >
+                      <Search size={13} /> Google Shopping
                     </a>
-                  )}
-
-                  <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem', flexWrap: 'wrap' }}>
-                    <a href={`https://www.amazon.com.br/s?k=${encodeURIComponent(item.name)}`} target="_blank" rel="noreferrer" style={{ fontSize: '0.75rem', padding: '0.4rem 0.6rem', background: 'rgba(255,255,255,0.05)', color: 'white', textDecoration: 'none', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)' }}>🛒 Amazon</a>
-                    <a href={`https://www.sephora.com.br/busca/?q=${encodeURIComponent(item.name)}`} target="_blank" rel="noreferrer" style={{ fontSize: '0.75rem', padding: '0.4rem 0.6rem', background: 'rgba(255,255,255,0.05)', color: 'white', textDecoration: 'none', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)' }}>🖤 Sephora</a>
-                    <a href={`https://lista.mercadolivre.com.br/${encodeURIComponent(item.name)}`} target="_blank" rel="noreferrer" style={{ fontSize: '0.75rem', padding: '0.4rem 0.6rem', background: 'rgba(255,255,255,0.05)', color: 'white', textDecoration: 'none', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)' }}>🤝 Mercado Livre</a>
+                    <a href={`https://www.amazon.com.br/s?k=${encodeURIComponent(item.name)}`} target="_blank" rel="noreferrer" style={{ fontSize: '0.75rem', padding: '0.4rem 0.6rem', background: 'var(--glass-bg)', color: 'var(--text-main)', textDecoration: 'none', borderRadius: '6px', border: '1px solid var(--glass-border)' }}>
+                      🛒 Amazon
+                    </a>
+                    <a href={`https://www.sephora.com.br/busca/?q=${encodeURIComponent(item.name)}`} target="_blank" rel="noreferrer" style={{ fontSize: '0.75rem', padding: '0.4rem 0.6rem', background: 'var(--glass-bg)', color: 'var(--text-main)', textDecoration: 'none', borderRadius: '6px', border: '1px solid var(--glass-border)' }}>
+                      🖤 Sephora
+                    </a>
+                    <a href={`https://lista.mercadolivre.com.br/${encodeURIComponent(item.name)}`} target="_blank" rel="noreferrer" style={{ fontSize: '0.75rem', padding: '0.4rem 0.6rem', background: 'var(--glass-bg)', color: 'var(--text-main)', textDecoration: 'none', borderRadius: '6px', border: '1px solid var(--glass-border)' }}>
+                      🤝 Mercado Livre
+                    </a>
                   </div>
                 </div>
                 
-                <button onClick={() => removeFromWishlist(item.id)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', padding: '0.5rem' }}>
-                  <Trash2 size={20} />
+                <button 
+                  onClick={() => handleRemove(item)} 
+                  style={{ background: 'none', border: 'none', color: 'var(--text-muted)', padding: '0.5rem', cursor: 'pointer' }}
+                  title="Remover"
+                >
+                  <Trash2 size={18} />
                 </button>
               </div>
             </div>
@@ -183,7 +209,7 @@ const Wishlist = () => {
         )}
       </div>
 
-      <button className="fab" onClick={() => setShowAddForm(true)}>
+      <button className="fab" onClick={() => setShowAddForm(true)} aria-label="Adicionar Desejo">
         <Plus size={24} />
       </button>
     </div>
